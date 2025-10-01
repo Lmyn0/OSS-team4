@@ -100,8 +100,7 @@ def draw_maze(surface, grid, width, height, cell, wall_thickness=2):
     pygame.display.get_surface().blit(surface, (0,0))
     pygame.display.flip()
 
-# --- 메인 실행행 ---
-def시
+# --- 메인 실행 ---
         screen.blit(surface, (0,0))
         info_surf = info_font.render(info_text, True, (0,0,0))
         screen.blit(info_surf, (4, 4))
