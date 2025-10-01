@@ -11,6 +11,39 @@ import random
 import time
 import pygame
 
+def draw_button(screen, rect, text, font, color=(200,200,200), text_color=(0,0,0)):
+    pygame.draw.rect(screen, color, rect)
+    pygame.draw.rect(screen, (0,0,0), rect, 2)  # 테두리
+    text_surf = font.render(text, True, text_color)
+    text_rect = text_surf.get_rect(center=rect.center)
+    screen.blit(text_surf, text_rect)
+
+def menu():
+    pygame.init()
+    screen = pygame.display.set_mode((600,400))
+    pygame.display.set_caption("미로 게임 - 난이도 선택")
+
+    font = pygame.font.SysFont("malgungothic", 25)
+
+    button1 = pygame.Rect(200, 120, 200, 70)
+    button2 = pygame.Rect(200, 220, 200, 70)
+
+    while True:
+        screen.fill((255, 255, 255))
+        draw_button(screen, button1, "난이도 : 쉬움", font)
+        draw_button(screen, button2, "난이도 : 어려움",font)
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit(0)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if button1.collidepoint(event.pos):
+                    return 1
+                elif button2.collidepoint(event.pos):
+                    return 2
 # 방향
 N, S, E, W = 1, 2, 4, 8
 DX = {E: 1, W: -1, N: 0, S: 0}
@@ -101,13 +134,24 @@ def draw_maze(surface, grid, width, height, cell, wall_thickness=2):
     pygame.display.flip()
 # --- 메인 실행 ---
 def main():
+    mode = menu()
+
+    if mode == 1:
+        default_width = 15
+        default_height = 15
+        default_cell = 40
+    elif mode == 2:
+        default_width = 20
+        default_height = 20
+        default_cell = 30
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--width', type=int, default=10)
+    parser.add_argument('--width', type=int, default=default_width)
     parser.add_argument('--height', type=int)
     parser.add_argument('--seed', type=int, default=None)
-    parser.add_argument('--delay', type=float, default=0.01,
+    parser.add_argument('--delay', type=float, default=0,
                         help='벽 생성 사이 대기 시간(초)')
-    parser.add_argument('--cell', type=int, default=24, help='셀의 픽셀 크기')
+    parser.add_argument('--cell', type=int, default=default_cell, help='셀의 픽셀 크기')
     args = parser.parse_args()
 
     width = args.width
@@ -145,9 +189,9 @@ def main():
     # 최종 미로 표시시
     draw_maze(surface, grid, width, height, cell)
 
-    # R : 동일 seed 재생성 / N : 새로운 seed 생성 / Q,ESC : 종료
-    info_font = pygame.font.SysFont(None, 20)
-    info_text = f"Seed: {seed}  (R: regen same seed, N: new seed, Q/ESC: quit)"
+    #N : 새로운 미로 생성 / Q,ESC : 종료
+    info_font = pygame.font.SysFont("malgungothic", 20)
+    info_text = f"(N: 미로 재생성, Q/ESC: 종료)"
     finished = True
 
     while True:
@@ -159,10 +203,6 @@ def main():
                 if ev.key in (pygame.K_q, pygame.K_ESCAPE):
                     pygame.quit()
                     return
-                elif ev.key == pygame.K_r:
-                    # 동일 seed로 재생성
-                    grid = generate_maze(width, height, seed, step_callback=step_callback)
-                    draw_maze(surface, grid, width, height, cell)
                 elif ev.key == pygame.K_n:
                     seed = random.randrange(0, 0xFFFF_FFFF)
                     pygame.display.set_caption(f'Kruskal Maze ({width}x{height}) seed={seed}')
