@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+"""
+Kruskal maze generator with animation using pygame.
+
+Usage:
+    python maze_pygame.py --width 20 --height 15 --seed 12345 --delay 0.01 --cell 24
+"""
+
+import sys
+import argparse
+import random
+import time
+import pygame
+
+# Directions (bit flags)
+N, S, E, W = 1, 2, 4, 8
+DX = {E: 1, W: -1, N: 0, S: 0}
+DY = {E: 0, W: 0, N: -1, S: 1}
+OPPOSITE = {E: W, W: E, N: S, S: N}
+
+# --- union-find tree like Ruby's Tree class ---
+class Tree:
+    def __init__(self):
+        self.parent = None
+
+    def root(self):
+        return self.parent.root() if self.parent else self
+
+    def connected(self, other):
+        return self.root() is other.root()
+
+    def connect(self, other):
+        # attach other's root to self
+        other.root().parent = self
+
+# --- Maze generation (Kruskal) with animation callback ---
+def generate_maze(width, height, seed, step_callback=None):
+    rand = random.Random(seed)
+    grid = [[0 for _ in range(width)] for _ in range(height)]
+    sets = [[Tree() for _ in range(width)] for _ in range(height)]
+
+    # build edges: add N and W edges like the Ruby version (to avoid duplicates)
+    edges = []
+    for y in range(height):
+        for x in range(width):
+            if y > 0:
+                edges.append((x, y, N))
+            if x > 0:
+                edges.append((x, y, W))
+
+    rand.shuffle(edges)
+
+    while edges:
+        x, y, direction = edges.pop()
+        nx, ny = x + DX[direction], y + DY[direction]
+        set1, set2 = sets[y][x], sets[ny][nx]
+
+        if not set1.connected(set2):
+            # before linking, call callback to show current grid (optional)
+            if step_callback:
+                step_callback(grid, width, height)
+
+            set1.connect(set2)
+            grid[y][x] |= direction
+            grid[ny][nx] |= OPPOSITE[direction]
+            # also callback after change to visualize the carved passage
+            if step_callback:
+                step_callback(grid, width, height)
+
+    # final callback
+    if step_callback:
+        step_callback(grid, width, height)
+    return grid
+
+# --- Pygame drawing utilities ---
+def draw_maze(surface, grid, width, height, cell, wall_thickness=2):
+    surface.fill((255, 255, 255))  # white background
+    # draw outer border
+    w_px = width * cell
+    h_px = height * cell
+
+    # Walls are black lines; open passages are absence of wall
+    for y in range(height):
+        for x in range(width):
+            cx = x * cell
+            cy = y * cell
+            cell_bits = grid[y][x]
+
+            # North wall
+            if not (cell_bits & N):
+                pygame.draw.line(surface, (0,0,0), (cx, cy), (cx + cell, cy), wall_thickness)
+            # West wall
+            if not (cell_bits & W):
+                pygame.draw.line(surface, (0,0,0), (cx, cy), (cx, cy + cell), wall_thickness)
+            # South wall (for bottom row, if open to south we skip)
+            if not (cell_bits & S):
+                pygame.draw.line(surface, (0,0,0), (cx, cy + cell), (cx + cell, cy + cell), wall_thickness)
+            # East wall
+            if not (cell_bits & E):
+                pygame.draw.line(surface, (0,0,0), (cx + cell, cy), (cx + cell, cy + cell), wall_thickness)
+
+    # optionally draw a subtle grid of cells (comment out if not desired)
+    # for x in range(width+1):
+    #     pygame.draw.line(surface, (230,230,230), (x*cell,0),(x*cell,h_px),1)
+    # for y in range(height+1):
+    #     pygame.draw.line(surface, (230,230,230), (0,y*cell),(w_px,y*cell),1)
+
+    pygame.display.get_surface().blit(surface, (0,0))
+    pygame.display.flip()
+
+# --- Main: setup pygame, run generation with animation ---
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--width', type=int, default=10)
+    parser.add_argument('--height', type=int)
+    parser.add_argument('--seed', type=int, default=None)
+    parser.add_argument('--delay', type=float, default=0.01,
+                        help='pause (seconds) between visual steps')
+    parser.add_argument('--cell', type=int, default=24, help='pixel size of a cell')
+    args = parser.parse_args()
+
+    width = args.width
+    height = args.height if args.height is not None else width
+    seed = args.seed if args.seed is not None else random.randrange(0, 0xFFFF_FFFF)
+    delay = args.delay
+    cell = args.cell
+
+    pygame.init()
+    caption = f'Kruskal Maze ({width}x{height}) seed={seed}'
+    pygame.display.set_caption(caption)
+
+    screen_w = width * cell
+    screen_h = height * cell
+    screen = pygame.display.set_mode((screen_w, screen_h))
+    surface = pygame.Surface((screen_w, screen_h))
+
+    clock = pygame.time.Clock()
+
+    # step callback updates the drawing and handles events so window stays responsive.
+    def step_callback(grid, w, h):
+        draw_maze(surface, grid, w, h, cell)
+        # handle events to allow closing window during generation
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit(0)
+        # small delay for animation speed
+        # use pygame.time.delay (ms) so it cooperates with event loop
+        ms = int(delay * 1000)
+        if ms > 0:
+            pygame.time.delay(ms)
+
+    # generate once and display
+    grid = generate_maze(width, height, seed, step_callback=step_callback)
+
+    # final draw to ensure complete
+    draw_maze(surface, grid, width, height, cell)
+
+    # Main interactive loop: Press R to regenerate with same seed, N for new seed, Q or window close to quit
+    info_font = pygame.font.SysFont(None, 20)
+    info_text = f"Seed: {seed}  (R: regen same seed, N: new seed, Q/ESC: quit)"
+    finished = True
+
+    while True:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+                return
+            elif ev.type == pygame.KEYDOWN:
+                if ev.key in (pygame.K_q, pygame.K_ESCAPE):
+                    pygame.quit()
+                    return
+                elif ev.key == pygame.K_r:
+                    # regenerate same seed
+                    grid = generate_maze(width, height, seed, step_callback=step_callback)
+                    draw_maze(surface, grid, width, height, cell)
+                elif ev.key == pygame.K_n:
+                    seed = random.randrange(0, 0xFFFF_FFFF)
+                    pygame.display.set_caption(f'Kruskal Maze ({width}x{height}) seed={seed}')
+                    grid = generate_maze(width, height, seed, step_callback=step_callback)
+                    draw_maze(surface, grid, width, height, cell)
+
+        # draw info overlay
+        # re-blit maze then render text
+        screen.blit(surface, (0,0))
+        info_surf = info_font.render(info_text, True, (0,0,0))
+        screen.blit(info_surf, (4, 4))
+        pygame.display.flip()
+        clock.tick(30)
+
+if __name__ == '__main__':
+    main()
