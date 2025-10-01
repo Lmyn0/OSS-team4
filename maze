@@ -99,6 +99,75 @@ def draw_maze(surface, grid, width, height, cell, wall_thickness=2):
 
     pygame.display.get_surface().blit(surface, (0,0))
     pygame.display.flip()
+# --- 메인 실행 ---
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--width', type=int, default=10)
+    parser.add_argument('--height', type=int)
+    parser.add_argument('--seed', type=int, default=None)
+    parser.add_argument('--delay', type=float, default=0.01,
+                        help='벽 생성 사이 대기 시간(초)')
+    parser.add_argument('--cell', type=int, default=24, help='셀의 픽셀 크기')
+    args = parser.parse_args()
+
+    width = args.width
+    height = args.height if args.height is not None else width
+    seed = args.seed if args.seed is not None else random.randrange(0, 0xFFFF_FFFF)
+    delay = args.delay
+    cell = args.cell
+
+    pygame.init()
+    caption = f'Kruskal Maze ({width}x{height}) seed={seed}'
+    pygame.display.set_caption(caption)
+
+    screen_w = width * cell
+    screen_h = height * cell
+    screen = pygame.display.set_mode((screen_w, screen_h))
+    surface = pygame.Surface((screen_w, screen_h))
+
+    clock = pygame.time.Clock()
+
+    
+    def step_callback(grid, w, h):
+        draw_maze(surface, grid, w, h, cell)
+        # 그리기 + 창 응답성 유지
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit(0)
+        ms = int(delay * 1000)
+        if ms > 0:
+            pygame.time.delay(ms)
+
+    # 최초 미로 생성 및 표시
+    grid = generate_maze(width, height, seed, step_callback=step_callback)
+
+    # 최종 미로 표시시
+    draw_maze(surface, grid, width, height, cell)
+
+    # R : 동일 seed 재생성 / N : 새로운 seed 생성 / Q,ESC : 종료
+    info_font = pygame.font.SysFont(None, 20)
+    info_text = f"Seed: {seed}  (R: regen same seed, N: new seed, Q/ESC: quit)"
+    finished = True
+
+    while True:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+                return
+            elif ev.type == pygame.KEYDOWN:
+                if ev.key in (pygame.K_q, pygame.K_ESCAPE):
+                    pygame.quit()
+                    return
+                elif ev.key == pygame.K_r:
+                    # 동일 seed로 재생성
+                    grid = generate_maze(width, height, seed, step_callback=step_callback)
+                    draw_maze(surface, grid, width, height, cell)
+                elif ev.key == pygame.K_n:
+                    seed = random.randrange(0, 0xFFFF_FFFF)
+                    pygame.display.set_caption(f'Kruskal Maze ({width}x{height}) seed={seed}')
+                    grid = generate_maze(width, height, seed, step_callback=step_callback)
+                    draw_maze(surface, grid, width, height, cell)
 
 # --- 메인 실행 ---
         screen.blit(surface, (0,0))
