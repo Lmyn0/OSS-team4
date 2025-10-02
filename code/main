@@ -1,0 +1,41 @@
+import sys
+import pygame
+import random
+from maze import generate_maze, N, S, E, W
+from player import Player
+from renderer import draw_maze
+
+def main():
+    width, height, cell_size = 15, 10, 40
+    seed = random.randint(0, 999999)
+
+    grid = generate_maze(width, height, seed)
+
+    pygame.init()
+    screen = pygame.display.set_mode((width*cell_size, height*cell_size))
+    pygame.display.set_caption(f"Kruskal Maze with Player (seed={seed})")
+    clock = pygame.time.Clock()
+
+    player = Player(0, 0)  # 시작 좌표 (0,0)
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:    player.move(grid, N)
+                elif event.key == pygame.K_DOWN:  player.move(grid, S)
+                elif event.key == pygame.K_LEFT:  player.move(grid, W)
+                elif event.key == pygame.K_RIGHT: player.move(grid, E)
+
+        draw_maze(screen, grid, cell_size)
+        player.draw(screen, cell_size)
+        pygame.display.flip()
+        clock.tick(30)
+
+    pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    main()
