@@ -1,0 +1,20 @@
+import pygame
+from maze import N, S, E, W, DX, DY
+
+class Player:
+    def __init__(self, x, y, color=(255,0,0)):
+        self.x = x
+        self.y = y
+        self.color = color
+
+    def move(self, grid, direction):
+        """미로의 벽을 확인하고 이동"""
+        cell = grid[self.y][self.x]
+        if cell & direction:
+            self.x += DX[direction]
+            self.y += DY[direction]
+
+    def draw(self, surface, cell_size):
+        cx = self.x * cell_size + cell_size//2
+        cy = self.y * cell_size + cell_size//2
+        pygame.draw.circle(surface, self.color, (cx, cy), cell_size//3)
