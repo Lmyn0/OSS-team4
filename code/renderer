@@ -1,7 +1,7 @@
 import pygame
 from maze import N, S, E, W
 
-def draw_maze(surface, grid, cell_size):
+def draw_maze(surface, grid, cell_size, goal_x, goal_y):
     h = len(grid)
     w = len(grid[0])
     surface.fill((255,255,255))
