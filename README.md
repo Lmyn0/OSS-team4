@@ -16,3 +16,4 @@
     - difficulty.py의 select_difficulty() 함수를 통해 쉬움/어려움 난이도 선택
     - 쉬움 : 20 x 20 셀, 셀 크기 60px
     - 어려움 : 30 x 30 셀, 셀 크기 50px
+
