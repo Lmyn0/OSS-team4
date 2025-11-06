@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Star Character</title>
+    <style>
+        /* 기본 배경 및 중앙 정렬 */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f0f0f0;
+        }
+
+        /* Component 2: 캐릭터 전체 컨테이너 */
+        .character {
+            position: relative;
+            /* 스펙: width: 194px, height: 194px */
+            width: 194px;
+            height: 194px;
+            border: 2px dashed #ccc; 
+            overflow: hidden; 
+        }
+
+        /* 5각 별 모양 정의를 위한 믹스인 (CSS 재사용) */
+        .star-shape {
+            /* 5개의 꼭짓점과 5개의 오목한 지점을 정의하여 별 모양 생성 */
+            -webkit-clip-path: polygon(50% 0%, 61% 35%, 100% 35%, 69% 57%, 80% 91%, 50% 70%, 20% 91%, 31% 57%, 0% 35%, 39% 35%);
+            clip-path: polygon(50% 0%, 61% 35%, 100% 35%, 69% 57%, 80% 91%, 50% 70%, 20% 91%, 31% 57%, 0% 35%, 39% 35%);
+        }
+
+        /* Star 1 (별 모양 몸체 1) */
+        .character > .star1 {
+            /* 스펙 비율 및 위치 그대로 적용 */
+            position: absolute;
+            left: 12.88%;
+            right: 17.03%;
+            top: 15.65%;
+            bottom: 11.78%;
+            
+            background: #000000;
+            border: 1px solid #000000;
+            box-sizing: border-box;
+            
+            /* ⭐️ 별 모양 적용 */
+            extend: .star-shape;
+        }
+
+        /* Star 2 (별 모양 몸체 2 - 변형됨) */
+        .character > .star2 {
+            /* 스펙 비율 및 위치 그대로 적용 */
+            position: absolute;
+            left: 0%;
+            right: 30.04%;
+            top: 0%;
+            bottom: 27.29%;
+
+            background: #000000;
+            border: 1px solid #000000;
+            box-sizing: border-box;
+
+            /* ⚠️ 스펙의 변환 행렬 적용 (별 모양을 기울이고 변형시킵니다) */
+            transform-origin: 0 0; 
+            transform: matrix(0.8, 0.61, -0.61, 0.79, 0, 0); 
+
+            /* ⭐️ 별 모양 적용 */
+            extend: .star-shape;
+        }
+
+        /* Ellipse 3 & 4 (눈) */
+        .character > .eye1,
+        .character > .eye2 {
+            position: absolute;
+            background: #FFFFFF;
+            border: 3px solid #000000;
+            border-radius: 50%; /* 타원/원을 만들기 위해 */
+            box-sizing: border-box;
+        }
+
+        /* Ellipse 3 (왼쪽 눈) */
+        .character > .eye1 {
+            left: 35.76%;
+            right: 56.61%;
+            top: 44.11%;
+            bottom: 48.3%;
+        }
+
+        /* Ellipse 4 (오른쪽 눈) */
+        .character > .eye2 {
+            left: 51.98%;
+            right: 40.39%;
+            top: 44.11%;
+            bottom: 48.3%;
+        }
+
+        /* Rectangle 1 (입) */
+        .character > .mouth {
+            position: absolute;
+            left: 36.72%;
+            right: 39.44%;
+            top: 55.97%;
+            bottom: 41.18%;
+            
+            background: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="character">
+        <div class="star1 star-shape"></div>
+        <div class="star2 star-shape"></div>
+        <div class="eye1"></div>
+        <div class="eye2"></div>
+        <div class="mouth"></div>
+    </div>
+</body>
+</html>
