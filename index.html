@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Maze Grid — FIT mode</title>
+  <style>
+    /* 데모용 페이지 레이아웃(가운데 정렬) */
+    html, body { height: 100%; margin: 0; }
+    body { display: grid; place-items: center; background: #eef6fb; font-family: system-ui, sans-serif; }
+
+    /* 보드(격자를 표시할 사각형) — 정확히 654x486 px */
+    .board {
+      position: relative;
+      width: 654px;
+      height: 486px;
+      background: #654C40;               /* 갈색 배경 */
+      border: 5px solid #000;
+      border-radius: 19px;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+    }
+
+    /* 캔버스는 보드를 100% 덮도록 */
+    #gridCanvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      display: block;
+      image-rendering: pixelated;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 격자를 맞춰 그릴 목표 사각형 -->
+  <div class="board" id="board">
+    <canvas id="gridCanvas"></canvas>
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const board  = document.getElementById('board');
+    const canvas = document.getElementById('gridCanvas');
+    const ctx    = canvas.getContext('2d', { alpha: true });
+
+    // ====== 옵션 (원하는 값으로 바꿔서 사용) ======
+    const FIT_OPTIONS = {
+      mode: 'fit',                 // 'fit' 고정
+      rows: 18,                    // 행 개수
+      cols: 24,                    // 열 개수
+      stroke: 'rgba(0,0,0,0.35)',  // 격자 선 색
+      lineWidth: 1,                // 선 두께(1px 권장)
+      background: '#654C40',       // 배경색(보드와 동일)
+      inset: { left: 0, top: 0, right: 0, bottom: 0 } // 내부 여백(필요 시)
+    };
+    // ============================================
+
+    // 고해상도(DPR) 캔버스 맞춤
+    function fitCanvasTo(el, cv, context) {
+      const r = el.getBoundingClientRect();
+      const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+      cv.style.width  = r.width  + 'px';
+      cv.style.height = r.height + 'px';
+      cv.width  = Math.round(r.width  * dpr);
+      cv.height = Math.round(r.height * dpr);
+      context.setTransform(dpr, 0, 0, dpr, 0, 0); // 좌표계를 CSS 픽셀 기준으로
+      return { w: r.width, h: r.height, dpr };
+    }
+
+    /**
+     * 특정 컨테이너에 격자 자동 생성
+     * @param {HTMLElement} el - 격자를 채울 컨테이너(사각형)
+     * @param {HTMLCanvasElement} cv - 그릴 캔버스
+     * @param {CanvasRenderingContext2D} context
+     * @param {Object} options - 위 FIT_OPTIONS 참고
+     */
+    function drawGridIn(el, cv, context, options) {
+      const opt = Object.assign({
+        mode: 'fit', rows: 10, cols: 10,
+        stroke: 'rgba(0,0,0,0.35)', lineWidth: 1,
+        background: '#654C40',
+        inset: { left: 0, top: 0, right: 0, bottom: 0 },
+      }, options || {});
+
+      const { w, h } = fitCanvasTo(el, cv, context);
+      const x0 = opt.inset.left,  y0 = opt.inset.top;
+      const x1 = w - opt.inset.right, y1 = h - opt.inset.bottom;
+      const width  = Math.max(0, x1 - x0);
+      const height = Math.max(0, y1 - y0);
+
+      // 배경(갈색) 채우기
+      context.clearRect(0, 0, w, h);
+      context.fillStyle = opt.background;
+      context.fillRect(0, 0, w, h);
+
+      // 그릴 영역 클리핑(인셋 지원)
+      context.save();
+      context.beginPath();
+      context.rect(x0, y0, width, height);
+      context.clip();
+
+      // 격자선 스타일
+      context.strokeStyle = opt.stroke;
+      context.lineWidth = opt.lineWidth;
+
+      // FIT: 정확히 rows x cols로 분할(모서리까지 정확히 맞춤)
+      const cellW = width  / opt.cols;
+      const cellH = height / opt.rows;
+
+      // 세로선
+      for (let c = 0; c <= opt.cols; c++) {
+        const x = x0 + c * cellW + 0.5; // 1px 헤어라인
+        context.beginPath();
+        context.moveTo(x, y0);
+        context.lineTo(x, y1);
+        context.stroke();
+      }
+      // 가로선
+      for (let r = 0; r <= opt.rows; r++) {
+        const y = y0 + r * cellH + 0.5; // 1px 헤어라인
+        context.beginPath();
+        context.moveTo(x0, y);
+        context.lineTo(x1, y);
+        context.stroke();
+      }
+
+      context.restore();
+    }
+
+    // 리사이즈/줌 변화에 대응
+    const ro = new ResizeObserver(() => drawGridIn(board, canvas, ctx, FIT_OPTIONS));
+    ro.observe(board);
+    window.addEventListener('resize', () => drawGridIn(board, canvas, ctx, FIT_OPTIONS));
+
+    // 초기 1회 렌더
+    drawGridIn(board, canvas, ctx, FIT_OPTIONS);
+
+    // --- 간단 테스트(콘솔) ---
+    (function tests(){
+      const br = board.getBoundingClientRect();
+      console.assert(Math.round(br.width)===654 && Math.round(br.height)===486, '[Test] board=654x486');
+      console.assert(canvas.width>0 && canvas.height>0, '[Test] canvas sized');
+    })();
+  });
+  </script>
+</body>
+</html>
