@@ -1,0 +1,96 @@
+/* 1. 디자인 스펙 기반 변수 정의 */
+:root{
+  --c-sky-light:#CAEBFD;   /* Rectangle 3 */
+  --c-sky:#66BDEC;         /* Rectangle 4 & header */
+  --c-board:#654C40;       /* Rectangle 8 (board) */
+  --radius-lg:21px;
+  --radius-md:19px;
+  --shadow: 0 8px 24px rgba(0,0,0,.15);
+}
+
+/* Reset */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; 
+  background:#eef6fb; 
+  font-family: 'Galmuri7', system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, sans-serif;
+  display:grid; place-items:center;
+}
+
+/* Shell = 더 큰 화면 설정 */
+.game-shell{
+  width: min(90vw, 1400px); 
+  height: min(90vh, 900px); 
+  position: relative;
+}
+
+/* Outer card (#CAEBFD) */
+.outer{
+  position:absolute; inset:0;
+  background: var(--c-sky-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+/* Inner panel (#66BDEC) */
+.inner{
+  position:absolute;
+  left:2.01%; right:2.15%; top:8.02%; bottom:2.67%;
+  background: var(--c-sky);
+  border-radius: var(--radius-lg);
+}
+
+/* Header mini buttons */
+.window-controls{
+  position:absolute; 
+  top:1.65%;
+  right:2.58%;
+  display:flex; gap:12px; align-items:center; 
+  line-height:1; user-select:none;
+}
+.ctrl-pill{
+  width: 56px; height: 36px; border-radius: var(--radius-lg);
+  background: var(--c-sky);
+  display:grid; place-items:center;
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,.05));
+  cursor: pointer; 
+  transition: transform 0.1s ease;
+}
+.ctrl-pill:active {
+    transform: translateY(1px);
+    box-shadow: none;
+    filter: drop-shadow(0 0px 0 rgba(0,0,0,.0));
+}
+.ctrl-pill span{font-size:20px}
+.ctrl-x{ width: 60px; }
+.ctrl-x span{ font-size:24px }
+
+/* Board area (dark brown) */
+.board-wrap{
+  position:absolute; 
+  left:3.44%; right:3.72%; top:11.93%; bottom:4.94%;
+  display:grid; place-items:center;
+}
+
+.board{
+  width:100%; height:100%;
+  /* 갈색 배경은 여전히 CSS에 남아있지만, JS에서 캔버스에 직접 채워줄 것입니다. */
+  background: var(--c-board);
+  border:5px solid #000; border-radius: var(--radius-md);
+  overflow:hidden; position:relative;
+}
+
+/* Canvas scales to parent while preserving crisp pixels */
+canvas{
+  width:100%; height:100%;
+  image-rendering: pixelated; image-rendering: crisp-edges;
+  display:block;
+}
+
+/* Optional watermark / title */
+.title{
+  position:absolute; left:16px; top:10px; opacity:.7;
+  font-size:14px; letter-spacing:.02em; color: #FFF; 
+  z-index: 10;
+}
