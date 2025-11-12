@@ -8,8 +8,12 @@ from player import Player
 from renderer import draw_maze, draw_debuff_items
 from debuff import (
     DebuffType, DebuffState, spawn_debuff_near_start,
-    update_debuffs
+    apply_debuff_on_pickup
 )
+
+SLOW_DURATION_MS = 30_000
+REVERSE_DURATION_MS = 15_000
+TIME_LEFT_MS = 30_000
 
 def main():
     difficulty = select_difficulty()
@@ -46,7 +50,7 @@ def main():
 
     goal_x, goal_y = width - 1, height - 1 
     debuff_state = DebuffState()
-    debuff_items = [spawn_debuff_near_start(grid, width, height, rng, start=(0,0))]
+    debuff_items = [spawn_debuff_near_start(grid, width, height, rng, start=(0, 0))]
 
     start_time = pygame.time.get_ticks() 
     game_over_message = "" 
@@ -88,21 +92,41 @@ def main():
         if debuff_items:
             remaining = []
             for it in debuff_items:
-                if (player.grid_x, player.grid_y) == (it.gx, it.gy):
-                    duration_ms = 30000
-                    if it.dtype == DebuffType.SLOW:
-                        debuff_state.slow_until_ms = now + duration_ms
-                    elif it.dtype == DebuffType.WALL_SHIFT:
-                        debuff_state.wallshift_perminent = True
-                        debuff_state.wallshift_until_ms = 0
-                        debuff_state._last_shift_ms = 0
-                    elif it.dtype == DebuffType.REVERSE:
-                        debuff_state.reverse_until_ms = now + 30000
-                else:
-                    remaining.append(it)
-            debuff_items = remaining
+                picked = (player.grid_x, player.grid_y) == (it.gx, it.gy)
 
-        update_debuffs(now, debuff_state, grid, width, height, start=(0,0), goal=(goal_x, goal_y), rng=rng)
+                if not picked:
+                    remaining.append(it)
+                    continue
+
+                # ── 아이템을 밟았을 때만 발동 ──
+                if it.dtype == DebuffType.SLOW:
+                    debuff_state.slow_until_ms = max(now, debuff_state.slow_until_ms) + SLOW_DURATION_MS
+
+                elif it.dtype == DebuffType.REVERSE:
+                    debuff_state.reverse_until_ms = max(now, debuff_state.reverse_until_ms) + REVERSE_DURATION_MS
+
+                elif it.dtype == DebuffType.TIME_LEFT:
+                    # 현재 남은 시간(ms)
+                    elapsed_ms = now - start_time
+                    remaining_time_ms = max(0, int(TIME_LIMIT_SECONDS * 1000 - elapsed_ms))
+
+                    # debuff.py에 헬퍼가 있으면 사용, 없으면 직접 차감
+                    try:
+                        new_remaining_ms = apply_debuff_on_pickup(
+                        now_ms=now,
+                        state=debuff_state,
+                        item=it,
+                        remaining_time_ms=remaining_time_ms,
+                        penalty_ms=TIME_LEFT_MS,
+                        )
+                    except NameError:
+                        new_remaining_ms = max(0, remaining_time_ms - TIME_LEFT_MS)
+
+                    # 차감된 값이 프레임 재계산에도 반영되도록 start_time을 앞으로 당김
+                    start_time = now - (TIME_LIMIT_SECONDS * 1000 - new_remaining_ms)
+
+        debuff_items = remaining
+
 
         if debuff_state.is_slow(now):
             player.speed = max(1, int(base_speed * debuff_state.slow_multiplier))

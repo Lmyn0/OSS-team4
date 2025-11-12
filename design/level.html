@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Index • Component 4 (First Page)</title>
+  <!-- Galmuri font -->
+  <link rel="stylesheet" href="https://cdn.quiple.dev/galmuri.css">
+  <style>
+    html, body { height: 100%; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #e9f4ff;
+      display: grid;
+      place-items: center;
+      font-family: 'Galmuri7', system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
+    }
+
+    .component4 {
+      position: relative;
+      width: 695px;
+      height: 563px;
+    }
+
+    .rect3 {
+      position: absolute;
+      left: 0%; right: 0%; top: 0%; bottom: 0%;
+      background: #CAEBFD;
+      border-radius: 21px;
+    }
+
+    .rect4 {
+      position: absolute;
+      left: 2.01%; right: 2.15%; top: 8.02%; bottom: 2.67%;
+      background: #66BDEC;
+      border-radius: 21px;
+    }
+
+    .rounded-rect, .rect6, .rect7 {
+      position: absolute;
+      top: 1.65%; bottom: 93.21%;
+      background: #66BDEC;
+      border-radius: 21px;
+    }
+    .rounded-rect { left: 90.97%; right: 2.58%; }
+    .rect6        { left: 83.81%; right: 9.74%; }
+    .rect7        { left: 76.65%; right: 16.91%; }
+
+    .icon-x, .icon-mi, .icon-eu {
+      position: absolute; color: #000; font-weight: 400; user-select: none;
+      font-family: 'Galmuri7';
+    }
+    .icon-x  { left: 93.12%; right: 4.73%;  top: 0.62%; bottom: 92.18%; font-size: 24px; line-height: 27px; }
+    .icon-mi { left: 85.67%; right: 12.18%; top: 1.44%; bottom: 91.36%; font-size: 20px; line-height: 22px; }
+    .icon-eu { left: 78.8%;  right: 19.05%; top: 1.44%; bottom: 91.36%; font-size: 20px; line-height: 22px; }
+
+    .rect8 {
+      box-sizing: border-box;
+      position: absolute; visibility: hidden;
+      left: 3.44%; right: 3.72%; top: 11.93%; bottom: 4.94%;
+      background: #654C40; border: 5px solid #000;
+    }
+
+    .outlined {
+      color: #E8EB2E;
+      -webkit-text-stroke: 4px #000;
+      text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000;
+      filter: blur(0.6px);
+      font-family: 'Galmuri7';
+      font-weight: 400;
+    }
+
+    .label-level {
+      position: absolute;
+      width: 420px; height: 124px;
+      left: 50%; top: 14.5%; transform: translateX(-50%);
+      font-size: 80px; line-height: 90px; text-align: center;
+      white-space: nowrap;
+    }
+
+    .opt {
+      position: absolute;
+      width: 190px; height: 124px;
+      left: 50%; transform: translateX(-50%);
+      font-size: 80px; line-height: 90px;
+      text-align: center;
+      text-decoration: none; /* 링크 밑줄 제거 */
+      color: #E8EB2E;
+      -webkit-text-stroke: 4px #000;
+      text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000;
+      filter: blur(0.6px);
+      transition: transform 0.2s, filter 0.2s;
+    }
+
+    .opt:hover {
+      transform: translateX(-50%) scale(1.05);
+      filter: blur(0);
+      cursor: pointer;
+    }
+
+    .opt-high { top: 40%; }
+    .opt-mid  { top: 57%; }
+    .opt-low  { top: 75%; }
+
+  </style>
+</head>
+<body>
+  <main class="component4" role="img" aria-label="First Page — Component 4">
+    <div class="rect3"></div>
+    <div class="rect4"></div>
+
+    <div class="rect7"></div>
+    <div class="rect6"></div>
+    <div class="rounded-rect"></div>
+    <div class="icon-eu">ㅡ</div>
+    <div class="icon-mi">ㅁ</div>
+    <div class="icon-x">x</div>
+
+    <div class="rect8" aria-hidden="true"></div>
+
+    <div class="label-level outlined">&lt; level &gt;</div>
+
+    <!-- 클릭 시 background.html로 이동 -->
+    <a href="background.html" class="opt opt-high">high</a>
+    <a href="background.html" class="opt opt-mid">mid</a>
+    <a href="background.html" class="opt opt-low">low</a>
+  </main>
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>Component 5 + Maze Grid (FIT)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* 페이지 기본 리셋 + 가운데 정렬 */
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #e9f4ff;
+      display: grid;
+      place-items: center;
+      font-family: 'Galmuri7', system-ui, -apple-system, Segoe UI, Roboto, Apple SD Gothic Neo, "Noto Sans KR", sans-serif;
+    }
+
+    /* Component 5 컨테이너 */
+    .component5 {
+      position: relative;
+      width: 695px;
+      height: 563px;
+    }
+
+    /* Rectangle 3 (바탕) */
+    .rect3 {
+      position: absolute;
+      inset: 0;
+      background: #CAEBFD;
+      border-radius: 21px;
+    }
+
+    /* Rectangle 4 (내부 파란 패널) */
+    .rect4 {
+      position: absolute;
+      left: 2.01%;
+      right: 2.15%;
+      top: 8.02%;
+      bottom: 2.67%;
+      background: #66BDEC;
+      border-radius: 21px;
+    }
+
+    /* 상단 오른쪽 버튼 3개 */
+    .rounded-rect,
+    .rect6,
+    .rect7 {
+      position: absolute;
+      top: 1.65%;
+      bottom: 93.21%;
+      background: #66BDEC;
+      border-radius: 21px;
+    }
+    .rounded-rect { left: 90.97%; right: 2.58%; }
+    .rect6        { left: 83.81%; right: 9.74%; }
+    .rect7        { left: 76.65%; right: 16.91%; }
+
+    /* 텍스트 아이콘: ㅡ, ㅁ, x (위치 그대로) */
+    .icon-eu {
+      position: absolute;
+      left: 78.8%;
+      right: 19.05%;
+      top: 1.44%;
+      bottom: 91.36%;
+      font-size: 20px;
+      line-height: 22px;
+      color: #000;
+      user-select: none;
+    }
+    .icon-mi {
+      position: absolute;
+      left: 85.67%;
+      right: 12.18%;
+      top: 1.44%;
+      bottom: 91.36%;
+      font-size: 20px;
+      line-height: 22px;
+      color: #000;
+      user-select: none;
+    }
+    .icon-x {
+      position: absolute;
+      left: 93.12%;
+      right: 4.73%;
+      top: 0.62%;
+      bottom: 92.18%;
+      font-size: 24px;
+      line-height: 27px;
+      color: #000;
+      user-select: none;
+    }
+
+    /* 내부 보드(갈색 사각형) - 파란 패널 안쪽에 패딩을 주고 딱 끼워 넣음 */
+    .board {
+      position: absolute;
+      inset: 16px;                 /* 파란 패널(rect4) 안쪽 여백 */
+      background: #654C40;         /* 갈색 배경 */
+      border: 5px solid #000;      /* 검정 테두리 */
+      border-radius: 19px;         /* 모서리 둥글게 */
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12); /* 은은한 안쪽 라인 */
+    }
+
+    /* 캔버스는 보드를 꽉 채움 */
+    #gridCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: pixelated;
+    }
+
+    /* 숨김 요소 (원본 명세 유지) */
+    .rect8 {
+      box-sizing: border-box;
+      position: absolute;
+      visibility: hidden;
+      left: 3.44%;
+      right: 3.72%;
+      top: 11.93%;
+      bottom: 4.94%;
+      background: #654C40;
+      border: 5px solid #000000;
+      border-radius: 8px;
+    }
+
+    /* ===== 추가: 배우 레이어 & 캐릭터 (그리드 위에 표시) ===== */
+    .actors {
+      position: absolute;
+      inset: 0;            /* 캔버스와 정확히 겹치게 */
+      pointer-events: none;/* 클릭 방해 방지 (필요시 제거) */
+    }
+    .player {
+      --size: 28px;        /* 112px의 1/4 = 28px */
+      --color: #d9d9d9;
+
+      position: absolute;
+      width: var(--size);
+      height: var(--size);
+      left: 0;
+      top: 0;
+      transform: translate(-50%, -50%); /* 중앙 기준 포지셔닝 */
+      box-sizing: border-box;
+      background: var(--color);
+      border: 3px solid #000;
+      border-radius: 50%;
+    }
+    .player .eye {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      right: 4px;
+      top: 9px;
+      background: #000;
+      border: 3px solid #000;
+      border-radius: 50%;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="component5" role="img" aria-label="Component 5 with Maze Grid">
+    <div class="rect3"></div>
+
+    <!-- 내부 파란 패널 -->
+    <div class="rect4">
+      <!-- 여기 보드를 끼워넣음 -->
+      <div class="board" id="board">
+        <canvas id="gridCanvas"></canvas>
+
+        <!-- ✅ 추가: 격자 위에 올라갈 레이어 -->
+        <div class="actors" id="actors"></div>
+      </div>
+    </div>
+
+    <!-- 상단 버튼 더미 -->
+    <div class="rect7"></div>
+    <div class="rect6"></div>
+    <div class="rounded-rect"></div>
+
+    <!-- 아이콘 텍스트 -->
+    <div class="icon-eu">ㅡ</div>
+    <div class="icon-mi">ㅁ</div>
+    <div class="icon-x">x</div>
+
+    <!-- 숨김 박스 (원본 명세용) -->
+    <div class="rect8"></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const board  = document.getElementById('board');
+      const canvas = document.getElementById('gridCanvas');
+      const ctx    = canvas.getContext('2d', { alpha: true });
+
+      // ====== 옵션(원하는 값으로 바꾸기) ======
+      const FIT_OPTIONS = {
+        mode: 'fit',                 // 'fit' 고정
+        rows: 18,                    // 행 개수
+        cols: 24,                    // 열 개수
+        stroke: 'rgba(0,0,0,0.35)',  // 격자 선 색
+        lineWidth: 1,                // 선 두께
+        background: '#654C40',       // 배경색(보드와 동일)
+        inset: { left: 0, top: 0, right: 0, bottom: 0 } // 내부 여백
+      };
+      // =====================================
+
+      // 고해상도(DPR) 대응
+      function fitCanvasTo(el, cv, context) {
+        const r = el.getBoundingClientRect();
+        const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+        cv.style.width  = r.width  + 'px';
+        cv.style.height = r.height + 'px';
+        cv.width  = Math.round(r.width  * dpr);
+        cv.height = Math.round(r.height * dpr);
+        context.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return { w: r.width, h: r.height, dpr };
+      }
+
+      // 격자 그리기
+      function drawGridIn(el, cv, context, options) {
+        const opt = Object.assign({
+          mode: 'fit', rows: 10, cols: 10,
+          stroke: 'rgba(0,0,0,0.35)', lineWidth: 1,
+          background: '#654C40',
+          inset: { left: 0, top: 0, right: 0, bottom: 0 },
+        }, options || {});
+
+        const { w, h } = fitCanvasTo(el, cv, context);
+        const x0 = opt.inset.left,  y0 = opt.inset.top;
+        const x1 = w - opt.inset.right, y1 = h - opt.inset.bottom;
+        const width  = Math.max(0, x1 - x0);
+        const height = Math.max(0, y1 - y0);
+
+        // 배경 채움
+        context.clearRect(0, 0, w, h);
+        context.fillStyle = opt.background;
+        context.fillRect(0, 0, w, h);
+
+        // 격자 영역 클립
+        context.save();
+        context.beginPath();
+        context.rect(x0, y0, width, height);
+        context.clip();
+
+        // 선 스타일
+        context.strokeStyle = opt.stroke;
+        context.lineWidth = opt.lineWidth;
+
+        // FIT 분할
+        const cellW = width  / opt.cols;
+        const cellH = height / opt.rows;
+
+        // 세로선
+        for (let c = 0; c <= opt.cols; c++) {
+          const x = x0 + c * cellW + 0.5;
+          context.beginPath();
+          context.moveTo(x, y0);
+          context.lineTo(x, y1);
+          context.stroke();
+        }
+        // 가로선
+        for (let r = 0; r <= opt.rows; r++) {
+          const y = y0 + r * cellH + 0.5;
+          context.beginPath();
+          context.moveTo(x0, y);
+          context.lineTo(x1, y);
+          context.stroke();
+        }
+
+        context.restore();
+      }
+
+      // 리사이즈 대응
+      const ro = new ResizeObserver(() => drawGridIn(board, canvas, ctx, FIT_OPTIONS));
+      ro.observe(board);
+      window.addEventListener('resize', () => drawGridIn(board, canvas, ctx, FIT_OPTIONS));
+
+      // 초기 렌더
+      drawGridIn(board, canvas, ctx, FIT_OPTIONS);
+
+      /* ===== 추가: 격자 위에 캐릭터 하나 띄우기 ===== */
+      const actors = document.getElementById('actors');
+
+      // 보기 좋은 랜덤 컬러 (HSL)
+      function randomColor() {
+        const h = (Math.random() * 360) | 0;
+        return `hsl(${h} 80% 55%)`;
+      }
+
+      // (x, y) 픽셀 좌표로 스폰 (보드 기준). 예: (40,40)
+      function spawnPlayer(parent, x = 40, y = 40) {
+        const el = document.createElement('div');
+        el.className = 'player';
+        el.style.setProperty('--color', randomColor());
+        el.style.left = x + 'px';
+        el.style.top  = y + 'px';
+
+        const eye = document.createElement('div');
+        eye.className = 'eye';
+        el.appendChild(eye);
+
+        parent.appendChild(el);
+        return el;
+      }
+
+      // 실제 생성
+      spawnPlayer(actors, 40, 40);
+    });
+  </script>
+</body>
+</html>
