@@ -105,26 +105,10 @@ def main():
                 elif it.dtype == DebuffType.REVERSE:
                     debuff_state.reverse_until_ms = max(now, debuff_state.reverse_until_ms) + REVERSE_DURATION_MS
 
-                elif it.dtype == DebuffType.TIME_LEFT:
-                    # 현재 남은 시간(ms)
-                    elapsed_ms = now - start_time
-                    remaining_time_ms = max(0, int(TIME_LIMIT_SECONDS * 1000 - elapsed_ms))
-
-                    # debuff.py에 헬퍼가 있으면 사용, 없으면 직접 차감
-                    try:
-                        new_remaining_ms = apply_debuff_on_pickup(
-                        now_ms=now,
-                        state=debuff_state,
-                        item=it,
-                        remaining_time_ms=remaining_time_ms,
-                        penalty_ms=TIME_LEFT_MS,
-                        )
-                    except NameError:
-                        new_remaining_ms = max(0, remaining_time_ms - TIME_LEFT_MS)
-
-                    # 차감된 값이 프레임 재계산에도 반영되도록 start_time을 앞으로 당김
-                    start_time = now - (TIME_LIMIT_SECONDS * 1000 - new_remaining_ms)
-
+                elif it.dtype == DebuffType.WALL_SHIFT:
+                    debuff_state.wallshift_permanent = True     
+                    debuff_state.wallshift_until_ms = 0
+                    debuff_state._last_shift_ms = 0
         debuff_items = remaining
 
 
