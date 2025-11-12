@@ -1,0 +1,91 @@
+/* ===== Global ===== */
+html, body { height: 100%; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #e9f4ff;            /* 바깥 배경 */
+  display: grid;
+  place-items: center;
+  font-family: 'Galmuri7', system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
+}
+
+/* ===== Component 5 크기 고정 (Figma 원본) ===== */
+.component5 {
+  position: relative;
+  width: 695px;
+  height: 563px;
+}
+
+/* Rectangle 3 (외곽) */
+.rect3 {
+  position: absolute;
+  left: 0%; right: 0%; top: 0%; bottom: 0%;
+  background: #CAEBFD;
+  border-radius: 21px;
+}
+
+/* Rectangle 4 (내부 파란 패널) */
+.rect4 {
+  position: absolute;
+  left: 2.01%;
+  right: 2.15%;
+  top: 8.02%;
+  bottom: 2.67%;
+  background: #66BDEC;
+  border-radius: 21px;
+}
+
+/* 상단 버튼 더미 (퍼센트 좌표 그대로) */
+.rounded-rect, .rect6, .rect7 {
+  position: absolute;
+  top: 1.65%;
+  bottom: 93.21%;
+  background: #66BDEC;
+  border-radius: 21px;
+}
+.rounded-rect { left: 90.97%; right: 2.58%; }
+.rect6        { left: 83.81%; right: 9.74%; }
+.rect7        { left: 76.65%; right: 16.91%; }
+
+/* 아이콘 텍스트 위치 (ㅡ, ㅁ, x) */
+.icon-x {
+  position: absolute;
+  left: 93.12%; right: 4.73%;
+  top: 0.62%; bottom: 92.18%;
+  font-size: 24px; line-height: 27px; color: #000; user-select: none;
+}
+.icon-mi {
+  position: absolute;
+  left: 85.67%; right: 12.18%;
+  top: 1.44%; bottom: 91.36%;
+  font-size: 20px; line-height: 22px; color: #000; user-select: none;
+}
+.icon-eu {
+  position: absolute;
+  left: 78.8%; right: 19.05%;
+  top: 1.44%; bottom: 91.36%;
+  font-size: 20px; line-height: 22px; color: #000; user-select: none;
+}
+
+/* 숨김 사양 박스(필요시) */
+.rect8 {
+  box-sizing: border-box;
+  position: absolute;
+  visibility: hidden;
+  left: 3.44%; right: 3.72%;
+  top: 11.93%; bottom: 4.94%;
+  background: #654C40;
+  border: 5px solid #000;
+  border-radius: 8px;
+}
+
+/* 페이지별 콘텐츠 넣는 슬롯: 내부 파란 패널(rect4) 안에 꽉 차게 */
+.content-slot {
+  position: absolute;
+  left: 2.01%;
+  right: 2.15%;
+  top: 8.02%;
+  bottom: 2.67%;
+  border-radius: 21px;   /* clipping 일관성 */
+  overflow: hidden;
+}
