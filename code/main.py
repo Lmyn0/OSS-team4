@@ -1,31 +1,34 @@
-# main.py
 import sys
 import pygame
 import random
 from difficulty import select_difficulty
 from maze import generate_maze, N, S, E, W
 from player import Player
-from renderer import draw_maze, draw_debuff_items
+from renderer import draw_maze, draw_debuff_items, draw_debuff_hud
 from debuff import (
     DebuffType, DebuffState, spawn_debuff_near_start,
     apply_debuff_on_pickup
 )
 
-SLOW_DURATION_MS = 30_000
-REVERSE_DURATION_MS = 15_000
-TIME_LEFT_MS = 30_000
+SLOW_DURATION_MS = 30_000       # 느려짐 30초
+REVERSE_DURATION_MS = 15_000    # 역방향 15초
+TIME_LEFT_MS = 30_000           # 제한 시간 30초 감소
+
 
 def main():
     difficulty = select_difficulty()
     width, height, cell_size = difficulty.width, difficulty.height, difficulty.cell
-    
-    TIME_LIMIT_SECONDS = difficulty.time_limit 
+    TIME_LIMIT_SECONDS = difficulty.time_limit
 
     seed = random.randint(0, 999999)
     rng = random.Random(seed)
     grid = generate_maze(width, height, seed)
 
     pygame.init()
+
+    font = pygame.font.Font(None, 24)
+    timer_font = pygame.font.SysFont(None, 40)
+    clock = pygame.time.Clock()
 
     # 1. 고정된 게임 표면 크기 계산
     game_width = width * cell_size
@@ -38,154 +41,141 @@ def main():
     # 3. 게임 로직이 그려질 내부 표면(Surface) 생성
     game_surface = pygame.Surface((game_width, game_height))
 
-    clock = pygame.time.Clock()
-    timer_font = pygame.font.SysFont(None, 40) 
-
     base_speed = max(1, cell_size // 8)
-    player = Player(0, 0, speed=cell_size // 8) 
+    player = Player(0, 0, speed=cell_size // 8)
     player.pixel_x = player.grid_x * cell_size
     player.pixel_y = player.grid_y * cell_size
     player.target_pixel_x = player.pixel_x
     player.target_pixel_y = player.pixel_y
 
-    goal_x, goal_y = width - 1, height - 1 
+    goal_x, goal_y = width - 1, height - 1
+
     debuff_state = DebuffState()
     debuff_items = [spawn_debuff_near_start(grid, width, height, rng, start=(0, 0))]
 
-    start_time = pygame.time.get_ticks() 
-    game_over_message = "" 
+    # 시간 관련 기준점: 게임 시작 시각(ms)
+    start_time_ms = pygame.time.get_ticks()
+
+    game_over_message = ""
     running = True
-    
+
     while running:
-        # 시간 계산
-        current_time = pygame.time.get_ticks()
-        now = current_time
-        elapsed_seconds = (current_time - start_time) / 1000
-        remaining_time = TIME_LIMIT_SECONDS - elapsed_seconds
+        # ───────── 시간 계산 ─────────
+        dt = clock.tick(60)                             # 프레임 간격(ms)
+        now_ms = pygame.time.get_ticks()                # 현재 시각(ms)
 
-        if remaining_time <= 0:
-            remaining_time = 0
-            running = False
+        elapsed_ms = now_ms - start_time_ms
+        total_limit_ms = TIME_LIMIT_SECONDS * 1000
+        remaining_time_ms = max(0, total_limit_ms - elapsed_ms)
+        remaining_time = remaining_time_ms / 1000.0     # 초 단위
+
+        # 시간 초과 체크
+        if remaining_time_ms <= 0:
             game_over_message = "시간 초과!"
+            break
 
-        # 이벤트 처리
+        # ───────── 이벤트 처리 ─────────
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            # 4. 창 크기 조절 이벤트(VIDEORESIZE) 처리
+
             elif event.type == pygame.VIDEORESIZE:
-                # 새 크기로 window_surface를 다시 설정
                 window_surface = pygame.display.set_mode(event.size, pygame.RESIZABLE)
-            
+
             elif event.type == pygame.KEYDOWN:
-                if debuff_state.is_reverse(now):
-                    if event.key == pygame.K_UP:    player.start_move(grid, S, cell_size)
-                    elif event.key == pygame.K_DOWN:  player.start_move(grid, N, cell_size)
-                    elif event.key == pygame.K_LEFT:  player.start_move(grid, E, cell_size)
-                    elif event.key == pygame.K_RIGHT: player.start_move(grid, W, cell_size)
+                if debuff_state.is_reverse(now_ms):
+                    if event.key == pygame.K_UP:
+                        player.start_move(grid, S, cell_size)
+                    elif event.key == pygame.K_DOWN:
+                        player.start_move(grid, N, cell_size)
+                    elif event.key == pygame.K_LEFT:
+                        player.start_move(grid, E, cell_size)
+                    elif event.key == pygame.K_RIGHT:
+                        player.start_move(grid, W, cell_size)
                 else:
-                    if event.key == pygame.K_UP:       player.start_move(grid, N, cell_size)
-                    elif event.key == pygame.K_DOWN:   player.start_move(grid, S, cell_size)
-                    elif event.key == pygame.K_LEFT:   player.start_move(grid, W, cell_size)
-                    elif event.key == pygame.K_RIGHT:  player.start_move(grid, E, cell_size)
- 
+                    if event.key == pygame.K_UP:
+                        player.start_move(grid, N, cell_size)
+                    elif event.key == pygame.K_DOWN:
+                        player.start_move(grid, S, cell_size)
+                    elif event.key == pygame.K_LEFT:
+                        player.start_move(grid, W, cell_size)
+                    elif event.key == pygame.K_RIGHT:
+                        player.start_move(grid, E, cell_size)
+
+        # ───────── 디버프 아이템 처리 ─────────
         if debuff_items:
-            remaining = []
+            next_items = []
             for it in debuff_items:
                 picked = (player.grid_x, player.grid_y) == (it.gx, it.gy)
 
                 if not picked:
-                    remaining.append(it)
+                    next_items.append(it)
                     continue
 
-                # ── 아이템을 밟았을 때만 발동 ──
+                # 아이템을 밟았을 때만 발동 (한 번만!)
                 if it.dtype == DebuffType.SLOW:
-                    debuff_state.slow_until_ms = max(now, debuff_state.slow_until_ms) + SLOW_DURATION_MS
+                    debuff_state.slow_until_ms = max(now_ms, debuff_state.slow_until_ms) + SLOW_DURATION_MS
 
                 elif it.dtype == DebuffType.REVERSE:
-                    debuff_state.reverse_until_ms = max(now, debuff_state.reverse_until_ms) + REVERSE_DURATION_MS
+                    debuff_state.reverse_until_ms = max(now_ms, debuff_state.reverse_until_ms) + REVERSE_DURATION_MS
 
                 elif it.dtype == DebuffType.TIME_LEFT:
-                    # 현재 남은 시간(ms)
-                    elapsed_ms = now - start_time
-                    remaining_time_ms = max(0, int(TIME_LIMIT_SECONDS * 1000 - elapsed_ms))
+                    # 현재 남은 시간(ms)에서 30초 차감
+                    new_remaining_ms = max(0, remaining_time_ms - TIME_LEFT_MS)
 
-                    # debuff.py에 헬퍼가 있으면 사용, 없으면 직접 차감
-                    try:
-                        new_remaining_ms = apply_debuff_on_pickup(
-                        now_ms=now,
-                        state=debuff_state,
-                        item=it,
-                        remaining_time_ms=remaining_time_ms,
-                        penalty_ms=TIME_LEFT_MS,
-                        )
-                    except NameError:
-                        new_remaining_ms = max(0, remaining_time_ms - TIME_LEFT_MS)
+                    # 남은 시간을 강제로 줄였으니, start_time_ms를 그에 맞게 앞으로 당겨줌
+                    # total_limit_ms - new_remaining_ms = 경과한 시간(ms)
+                    elapsed_ms_after = total_limit_ms - new_remaining_ms
+                    start_time_ms = now_ms - elapsed_ms_after
 
-                    # 차감된 값이 프레임 재계산에도 반영되도록 start_time을 앞으로 당김
-                    start_time = now - (TIME_LIMIT_SECONDS * 1000 - new_remaining_ms)
+            debuff_items = next_items
 
-        debuff_items = remaining
-
-
-        if debuff_state.is_slow(now):
+        # ───────── 디버프 효과 반영 (속도) ─────────
+        if debuff_state.is_slow(now_ms):
             player.speed = max(1, int(base_speed * debuff_state.slow_multiplier))
         else:
             player.speed = base_speed
 
-        # 플레이어 상태 업데이트
-        player.update() 
+        # ───────── 플레이어 상태 업데이트 ─────────
+        player.update()
 
         # 승리 조건 확인
         if player.grid_x == goal_x and player.grid_y == goal_y:
             running = False
             game_over_message = "GAME OVER!"
 
-        # --- 5. 그리기 ---
+        # ───────── 그리기 ─────────
         game_surface.fill((255, 255, 255))
-        # 미로와 목표지점 그리기
+
         draw_maze(game_surface, grid, cell_size, goal_x, goal_y)
         draw_debuff_items(game_surface, debuff_items, cell_size)
+        player.draw(game_surface, cell_size)
 
-        # 플레이어 그리기
-        player.draw(game_surface, cell_size) 
+        # 상태창 (오른쪽 상단 HUD) – 항상 최신 now_ms / remaining_time_ms 사용
+        draw_debuff_hud(game_surface, debuff_state, now_ms, remaining_time_ms, font)
 
-        # 타이머 텍스트 그리기
-        timer_text = f"Time: {int(remaining_time)}"
-        timer_surf = timer_font.render(timer_text, True, (0, 0, 0)) 
-        game_surface.blit(timer_surf, (10, 10)) # game_surface에 blit
-
-        # --- 6. 화면 업데이트 (스케일링) ---
-        
-        # game_surface를 window_surface의 현재 크기에 맞게 스케일링
-        scaled_surface = pygame.transform.scale(game_surface, window_surface.get_size())
-        
-        # 스케일링된 표면을 실제 창에 그리기
-        window_surface.blit(scaled_surface, (0, 0))
-        
-        pygame.display.flip() 
-        
-        clock.tick(60)
-
-    # 게임 오버 화면
-    if game_over_message:
-        # 게임 오버 메시지도 game_surface에 그림
-        msg_surf = timer_font.render(game_over_message, True, (0, 0, 0))
-        msg_rect = msg_surf.get_rect(center=game_surface.get_rect().center)
-        
-        # 덮어쓰기 위해 회색 배경을 game_surface에 그림
-        game_surface.fill((220, 220, 220)) 
-        game_surface.blit(msg_surf, msg_rect)
-
-        # 스케일링하여 window_surface에 표시
+        # 스케일링 후 화면에 표시
         scaled_surface = pygame.transform.scale(game_surface, window_surface.get_size())
         window_surface.blit(scaled_surface, (0, 0))
         pygame.display.flip()
-        
-        pygame.time.wait(3000) 
+
+    # ───────── 게임 오버 화면 ─────────
+    if game_over_message:
+        msg_surf = timer_font.render(game_over_message, True, (0, 0, 0))
+        msg_rect = msg_surf.get_rect(center=game_surface.get_rect().center)
+
+        game_surface.fill((220, 220, 220))
+        game_surface.blit(msg_surf, msg_rect)
+
+        scaled_surface = pygame.transform.scale(game_surface, window_surface.get_size())
+        window_surface.blit(scaled_surface, (0, 0))
+        pygame.display.flip()
+
+        pygame.time.wait(3000)
 
     pygame.quit()
     sys.exit()
+
 
 if __name__ == "__main__":
     main()

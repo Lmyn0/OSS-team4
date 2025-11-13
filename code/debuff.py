@@ -21,12 +21,8 @@ class DebuffItem:
 class DebuffState:
     def __init__(self):
         self.slow_until_ms = 0
-        self.wallshift_until_ms = 0
         self.reverse_until_ms = 0
-        self.wallshift_interval_ms = 1000
-        self._last_shift_ms = 0
         self.slow_multiplier = 0.5  # 기본 속도의 50%
-        self.wallshift_perminent = False
 
     def is_slow(self, now_ms):
         return now_ms < self.slow_until_ms
