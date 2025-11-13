@@ -18,7 +18,11 @@ def draw_maze(surface, grid, cell_size, goal_x, goal_y):
                 pygame.draw.line(surface,(0,0,0),(cx,cy+cell_size),(cx+cell_size,cy+cell_size),2)
             if not (cell & E):
                 pygame.draw.line(surface,(0,0,0),(cx+cell_size,cy),(cx+cell_size,cy+cell_size),2)
-
+    gx = goal_x * cell_size + cell_size // 2
+    gy = goal_y * cell_size + cell_size // 2
+    radius = max(6, cell_size // 3)
+    pygame.draw.circle(surface, (255, 0, 0), (gx, gy), radius)
+    
 def draw_debuff_items(surface, items, cell_size):
     import pygame
     for it in items:
