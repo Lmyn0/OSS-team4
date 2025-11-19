@@ -51,7 +51,46 @@ def main():
     goal_x, goal_y = width - 1, height - 1
 
     debuff_state = DebuffState()
-    debuff_items = [spawn_debuff_near_start(grid, width, height, rng, start=(0, 0))]
+    debuff_items = []
+    #    초반 긴장감을 위해 하나는 시작점 근처에 둡니다.
+    start_item = spawn_debuff_near_start(grid, width, height, rng, start=(0, 0))
+    debuff_items.append(start_item)
+
+    # 2. 맵 전체에 랜덤하게 추가 배치
+    #    맵 크기에 비례해서 개수를 정합니다 (예: 전체 칸 수의 5% ~ 10%)
+    total_cells = width * height
+    target_item_count = int(total_cells * 0.05)  # 5% 비율 (조절 가능)
+    
+    # 이미 아이템이 있거나, 시작점/도착점인 위치 기록
+    occupied_positions = set()
+    occupied_positions.add((0, 0))              # 시작점
+    occupied_positions.add((goal_x, goal_y))    # 도착점
+    occupied_positions.add((start_item.gx, start_item.gy)) # 첫 번째 아이템 위치
+
+    # 목표 개수가 될 때까지 랜덤 배치
+    # (이미 하나 넣었으니 target_item_count만큼 추가하거나, 합쳐서 count하거나 선택)
+    # 여기서는 '추가로' target_item_count 개를 더 뿌립니다.
+    current_added = 0
+    while current_added < target_item_count:
+        rx = rng.randint(0, width - 1)
+        ry = rng.randint(0, height - 1)
+
+        # 이미 선점된 위치가 아니면 배치
+        if (rx, ry) not in occupied_positions:
+            # 랜덤 타입 선택
+            dtype = rng.choice([DebuffType.SLOW, DebuffType.TIME_LEFT, DebuffType.REVERSE])
+            
+            # 아이템 생성 (DebuffItem 클래스가 import 되어 있어야 함)
+            # 주의: debuff.py 파일에 DebuffItem 클래스가 정의되어 있다고 가정합니다.
+            from debuff import DebuffItem # 맨 위에 import 되어 있다면 생략 가능
+            
+            new_item = DebuffItem(rx, ry, dtype)
+            debuff_items.append(new_item)
+            
+            occupied_positions.add((rx, ry))
+            current_added += 1
+
+    print(f"디버프 아이템 총 {len(debuff_items)}개 배치됨.")
 
     # 시간 관련 기준점: 게임 시작 시각(ms)
     start_time_ms = pygame.time.get_ticks()
