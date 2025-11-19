@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>YOU WIN! - Simple 8bit Style (No CTA)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="https://cdn.quiple.dev/galmuri.css">
+
+  <style>
+    /* 페이지 기본 리셋 + 가운데 정렬 */
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #e9f4ff; /* 외부 배경색 */
+      display: grid;
+      place-items: center;
+      font-family: 'Galmuri7', system-ui, -apple-system, Segoe UI, Roboto,
+        Apple SD Gothic Neo, "Noto Sans KR", sans-serif;
+    }
+
+    /* Component 5 컨테이너 */
+    .component5 {
+      position: relative;
+      width: 695px;
+      height: 563px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* 창에 약간의 입체감 부여 */
+    }
+
+    /* Rectangle 3 (바탕) */
+    .rect3 {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: #CAEBFD;
+      border-radius: 21px;
+    }
+
+    /* Rectangle 4 (내부 파란 패널) */
+    .rect4 {
+      position: absolute;
+      /* Figma 스펙의 %를 px로 변환하여 적용 */
+      left: 14px; /* 2.01% of 695px ≈ 14px */
+      right: 15px; /* 2.15% of 695px ≈ 15px */
+      top: 45px; /* 8.02% of 563px ≈ 45px */
+      bottom: 15px; /* 2.67% of 563px ≈ 15px */
+      background: #66BDEC;
+      border-radius: 21px;
+      overflow: hidden;
+    }
+
+    /* 상단 오른쪽 버튼 3개 컨테이너 */
+    .window-controls {
+      position: absolute;
+      right: 2.58%;
+      top: 1.65%;
+      height: 5.14%;
+      display: flex;
+      gap: 7px;
+      align-items: center;
+    }
+
+    /* 버튼 공통 스타일 */
+    .window-btn {
+      width: 25px;
+      height: 25px;
+      background: #66BDEC;
+      border-radius: 21px;
+      display: grid;
+      place-items: center;
+      color: #000000;
+      font-weight: 400;
+      user-select: none;
+      box-sizing: border-box;
+      line-height: 1;
+    }
+
+    /* 아이콘 개별 스타일 */
+    .icon-eu { font-size: 20px; line-height: 0.5em; }
+    .icon-mi { font-size: 20px; line-height: 0.8em; padding-top: 2px;}
+    .icon-x { font-size: 24px; line-height: 1.1em; }
+
+    /* =========================
+        YOU WIN! 레이아웃
+        ========================= */
+
+    /* 바닥 영역 (갈색 부분) - 유지 */
+    .ground-wrap {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0; /* rect4 내부에서 하단에 배치 */
+      height: 153px; /* rect4 높이 대비 153px */
+      background:
+        radial-gradient(#4a3a32 1px, transparent 1px) 0 0/6px 6px,
+        radial-gradient(#4a3a32 1px, transparent 1px) 3px 3px/6px 6px,
+        #654C40; /* 흙 패턴 + 갈색 배경 */
+      z-index: 1;
+    }
+
+    /* 검은 선 (Rectangle 10) - 유지 */
+    .ground-line {
+      position: absolute;
+      top: -7px; /* 갈색 영역 위쪽으로 7px */
+      left: 0;
+      right: 0;
+      height: 7px;
+      background: #000000;
+      z-index: 2;
+    }
+
+    /* YOU WIN! 텍스트 (파란 영역) */
+    .win-text {
+      position: absolute;
+      left: 50%;
+      /* 파란 영역의 상단 절반 정도에 위치 */
+      top: 35%; /* 기존 값 유지 */
+      transform: translate(-50%, -50%); /* x축, y축 중앙 정렬 */
+      width: 660px;
+      height: 126px;
+      
+      font-size: 128px;
+      line-height: 144px;
+
+      color: #E8EB2E; /* 노란색 */
+      text-align: center;
+      white-space: nowrap;
+      
+      /* 픽셀 아트 텍스트 효과 */
+      -webkit-text-stroke: 3px #000000;
+      text-shadow:
+        4px 4px 0 #000000;
+      filter: blur(0.6px);
+      image-rendering: pixelated;
+      z-index: 5;
+    }
+
+    /* >> Try again 텍스트 관련 CSS는 제거 */
+  </style>
+</head>
+<body>
+
+  <div class="component5">
+    <div class="rect3"></div>
+    
+    <div class="window-controls">
+        <div class="window-btn icon-eu">ㅡ</div>
+        <div class="window-btn icon-mi">ㅁ</div>
+        <div class="window-btn icon-x">x</div>
+    </div>
+    
+    <div class="rect4">
+      
+      <div class="win-text">YOU WIN!</div>
+
+      <div class="ground-wrap">
+        <div class="ground-line"></div>
+        </div>
+
+    </div>
+  </div>
+
+</body>
+</html>
