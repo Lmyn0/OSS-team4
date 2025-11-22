@@ -29,6 +29,20 @@
       gap: 18px; /* >> 와 start 사이 간격 */
       text-decoration: none;
     }
+/* 로고 영역 */
+.logo-wrap {
+  position: absolute;
+  left: 50%;
+  top: 10%;          /* 위에서 어느 정도 내려올지 (원하면 숫자 조절) */
+  transform: translateX(-50%);
+}
+
+.logo-zero {
+  width: 700px;      /* 로고 크기 (원하는 대로 숫자 조절) */
+  max-width: 100%;
+  image-rendering: pixelated; /* 살짝 픽셀 느낌 */
+  display: block;
+}
 
     .chevrons, .start {
       font-family: 'Galmuri7';
@@ -77,6 +91,12 @@
 
     <!-- 콘텐츠 -->
     <section class="content-slot">
+        <!-- ZERO EXIT 로고 -->
+  <div class="logo-wrap">
+    <img src="C:\팀플\image\zeroexit.png" alt="ZERO EXIT" class="logo-zero">
+  </div>
+
+  <div class="ground"></div>
       <div class="ground"></div>
 
       <!-- >> start 버튼 -->
