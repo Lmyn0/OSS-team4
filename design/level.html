@@ -85,7 +85,7 @@
       left: 50%; transform: translateX(-50%);
       font-size: 80px; line-height: 90px;
       text-align: center;
-      text-decoration: none; /* 링크 밑줄 제거 */
+      text-decoration: none;
       color: #E8EB2E;
       -webkit-text-stroke: 4px #000;
       text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000;
@@ -99,9 +99,8 @@
       cursor: pointer;
     }
 
-    .opt-high { top: 40%; }
-    .opt-mid  { top: 57%; }
-    .opt-low  { top: 75%; }
+    .opt-hard { top: 40%; }
+    .opt-low  { top: 65%; }
 
   </style>
 </head>
@@ -121,9 +120,8 @@
 
     <div class="label-level outlined">&lt; level &gt;</div>
 
-    <!-- 클릭 시 background.html로 이동 -->
-    <a href="background.html" class="opt opt-high">high</a>
-    <a href="background.html" class="opt opt-mid">mid</a>
+    <!-- mid 제거 완료 -->
+    <a href="background.html" class="opt opt-hard">hard</a>
     <a href="background.html" class="opt opt-low">low</a>
   </main>
 </body>
