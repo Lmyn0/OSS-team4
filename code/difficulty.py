@@ -1,4 +1,3 @@
-# difficulty.py
 import sys
 import pygame
 
@@ -6,27 +5,27 @@ FONT_NAME = "malgungothic"  # 폰트 없으면 None으로 fallback
 MENU_FONT_SIZE = 25
 
 class Difficulty:
-    def __init__(self, width, height, cell, time_limit):
+    # [수정] name 파라미터 추가
+    def __init__(self, width, height, cell, time_limit, name):
         self.width = width
         self.height = height
         self.cell = cell
         self.time_limit = time_limit
+        self.name = name  # [수정] 난이도 이름 저장
 
-# 셀 크기를 60, 50으로 대폭 늘립니다.
+# [수정] 객체 생성 시 name 지정
 # (EASY: 20x20, 셀 60px, 창 1200x1200)
-EASY = Difficulty(width=20, height=20, cell=60, time_limit=180) 
+EASY = Difficulty(width=20, height=20, cell=60, time_limit=180, name="Easy") 
 # (HARD: 30x30, 셀 50px, 창 1500x1500)
-HARD = Difficulty(width=30, height=30, cell=50, time_limit=300) 
+HARD = Difficulty(width=30, height=30, cell=50, time_limit=300, name="Hard") 
 
 def _draw_button(screen, rect, text, font, color=(200,200,200), text_color=(0,0,0)):
-    # ... (이하 동일) ...
     pygame.draw.rect(screen, color, rect)
     pygame.draw.rect(screen, (0,0,0), rect, 2)
     surf = font.render(text, True, text_color)
     screen.blit(surf, surf.get_rect(center=rect.center))
 
 def select_difficulty():
-    # ... (이하 동일) ...
     pygame.init()
     screen = pygame.display.set_mode((600, 400))
     pygame.display.set_caption("미로 게임 - 난이도 선택")
