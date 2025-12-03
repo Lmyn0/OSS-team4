@@ -19,6 +19,7 @@ REVERSE_DURATION_MS = 15_000
 TIME_LEFT_MS = 15_000          
 
 MAX_DEBUFF_ITEMS = 25
+ATTACK_ITEM_COUNT = 5
 
 def main():
     difficulty = select_difficulty()
@@ -66,8 +67,10 @@ def main():
                 by = rng.randint(0, height - 1)
                 if (bx, by) != (0, 0) and (bx, by) != (goal_x, goal_y):
                     boss = Boss(bx, by, cell_size, max_hp=5)
-                    break
-        
+                    break       
+        attack_charges = 0
+        attack_items = []
+
         debuff_state = DebuffState()
         debuff_items = []
         start_item = spawn_debuff_near_start(grid, width, height, rng, start=(0, 0))
@@ -80,8 +83,19 @@ def main():
         if boss and boss.is_alive:
             occupied_positions.add((boss.x, boss.y))
 
+        attack_items = []
+        for _ in range(ATTACK_ITEM_COUNT):
+            while True:
+                ax = rng.randint(0, width - 1)
+                ay = rng.randint(0, height - 1)
+                if (ax, ay) not in occupied_positions:
+                    attack_items.append((ax, ay))
+                    occupied_positions.add((ax, ay))
+                    break
+
         remaining_slots = MAX_DEBUFF_ITEMS - len(debuff_items)
-        if remaining_slots < 0: remaining_slots = 0
+        if remaining_slots < 0:
+            remaining_slots = 0
         target_item_count = min(remaining_slots, int(width * height * 0.05))
 
         current_added = 0
@@ -144,8 +158,14 @@ def main():
                             elif event.key == pygame.K_LEFT: player.start_move(grid, W, cell_size)
                             elif event.key == pygame.K_RIGHT: player.start_move(grid, E, cell_size)
                         
-                        if event.key == pygame.K_SPACE and boss and boss.is_alive:
-                            boss.take_damage(1)
+                        if event.key == pygame.K_SPACE:
+                            if attack_charges > 0 and boss and boss.is_alive:
+                                px, py = player.grid_x, player.grid_y
+                                bx, by = boss.x, boss.y
+
+                                if(px == bx and py == by) or abs(px - bx) + abs(py - by) == 1:
+                                    boss.take_damage(1)
+                                    attack_charges -= 1
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1: # 좌클릭
@@ -199,6 +219,15 @@ def main():
                     if abs(player.pixel_x - boss.pixel_x) < cell_size/2 and abs(player.pixel_y - boss.pixel_y) < cell_size/2:
                         game_over_message = "CAUGHT BY BOSS"
 
+                # 추가. 공격 아이템 처리
+                if attack_items:
+                    next_attack_items = []
+                    for (ax, ay) in attack_items:
+                        if (player.grid_x, player.grid_y) == (ax, ay):
+                            attack_charges += 1
+                        else:
+                            next_attack_items.append((ax, ay))
+                    attack_items = next_attack_items
                 if debuff_items:
                     next_items = []
                     for it in debuff_items:
@@ -233,9 +262,16 @@ def main():
             game_surface.fill((255, 255, 255))
             draw_maze(game_surface, grid, cell_size, goal_x, goal_y)
             draw_debuff_items(game_surface, debuff_items, cell_size)
-            if boss and boss.is_alive: boss.draw(game_surface)
+
+            for (ax, ay) in attack_items:
+                cx = ax * cell_size + cell_size // 2
+                cy = ay * cell_size + cell_size // 2
+                pygame.draw.circle(game_surface, (255, 255, 0), (cx, cy), cell_size // 6)
+
+            if boss and boss.is_alive:
+                boss.draw(game_surface)
             player.draw(game_surface, cell_size)
-            draw_debuff_hud(game_surface, debuff_state, now_ms, remaining_time_ms, hud_font)
+            draw_debuff_hud(game_surface, debuff_state, now_ms, remaining_time_ms, hud_font, attack_charges)
 
             # 우상단 일시정지 버튼
             if not is_menu_mode and not show_manual:

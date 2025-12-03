@@ -22,7 +22,7 @@ class DebuffState:
     def __init__(self):
         self.slow_until_ms = 0
         self.reverse_until_ms = 0
-        self.slow_multiplier = 0.5  # 기본 속도의 50%
+        self.slow_multiplier = 0.6  # 기본 속도의 50%
 
     def is_slow(self, now_ms):
         return now_ms < self.slow_until_ms
