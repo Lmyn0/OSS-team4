@@ -5,7 +5,6 @@
   <title>Game Manual</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- 폰트 + 공통 프레임 -->
   <link rel="stylesheet" href="https://cdn.quiple.dev/galmuri.css">
   <link rel="stylesheet" href="assets/frame.css">
 
@@ -16,8 +15,7 @@
       background: #e9f4ff;
       display: grid;
       place-items: center;
-      font-family: 'Galmuri7', system-ui, -apple-system, Segoe UI, Roboto,
-        "Noto Sans KR", sans-serif;
+      font-family: 'Galmuri7', sans-serif;
     }
 
     .component5 {
@@ -26,67 +24,89 @@
       height: 563px;
     }
 
-    /* 매뉴얼 내용 공통 아웃라인 스타일 */
-    .manual-outlined {
+    /* 제목 아웃라인 */
+    .title-outlined {
       color: #E8EB2E;
-      -webkit-text-stroke: 3px #000;
+      -webkit-text-stroke: 2.5px #000;
       text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000;
-      filter: blur(0.6px);
-      font-weight: 400;
+      font-size: 48px;
+      margin: 0 0 20px 0;
+      letter-spacing: 1px;
     }
 
-    /* 파란 내부 패널 안쪽에 매뉴얼 배치 */
+    /* 내용 전체 컨테이너 (조금 위로 올림) */
     .manual-container {
       position: absolute;
       left: 50%;
-      top: 52%;
+      top: 46%;                 /* 기존 52% → 46% */
       transform: translate(-50%, -50%);
-      width: 629px;
+      width: 610px;
       height: 360px;
-      padding: 28px 40px;
       box-sizing: border-box;
+      padding: 20px 35px 70px;  /* 아래는 버튼 여유 공간 */
     }
 
-    .manual-title {
-      font-size: 48px;
-      line-height: 54px;
-      margin: 0 0 20px 0;
+    /* 2열 구조 */
+    .row {
+      display: flex;
+      flex-direction: row;
+      margin-bottom: 12px;
     }
 
-    .manual-body {
-      font-size: 24px;
-      line-height: 27px;
-      white-space: pre-line; /* 줄바꿈 유지 */
+    .label {
+      width: 110px;
+      font-size: 22px;
+      color: #FFFFFF;
+      text-shadow: 1px 1px #000;
     }
 
+    .value {
+      flex: 1;
+      font-size: 22px;
+      color: #FFFFFF;
+      text-shadow: 1px 1px #000;
+    }
+
+    /* 아이템 색상 */
+    .blue   { color: #3bb0ff; }
+    .purple { color: #b03bff; }
+    .red    { color: #ff3b3b; }
+
+    /* CLOSED 버튼 — 오른쪽 하단 배치 */
     .manual-close-btn {
       position: absolute;
-      right: 40px;
-      bottom: 32px;
-      width: 149px;
+      right: 40px;     /* 오른쪽에서 40px */
+      bottom: 28px;    /* 아래에서 28px */
+      width: 150px;
       height: 40px;
+
+      background: #E8EB2E;
+      border: 3px solid #000;
+      border-radius: 10px;
+
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 36px;
-      line-height: 40px;
+
+      font-size: 24px;
+      color: #000;
+      font-weight: 700;
       text-decoration: none;
-      border: 3px solid #000000;
-      border-radius: 10px;
-      background: transparent;
-      box-sizing: border-box;
-      cursor: pointer;
+
+      box-shadow: 3px 3px 0 #000;
+      transition: 0.08s ease;
     }
 
     .manual-close-btn:hover {
-      transform: scale(1.03);
-      filter: blur(0);
+      transform: translateY(-2px);
+      box-shadow: 5px 5px 0 #000;
     }
   </style>
 </head>
+
 <body>
   <main class="component5">
-    <!-- 공통 프레임 (frame.css에 정의된 것 이용) -->
+    <!-- 기본 프레임 -->
     <div class="rect3"></div>
     <div class="rect4"></div>
 
@@ -98,25 +118,49 @@
     <div class="icon-mi">ㅁ</div>
     <div class="icon-x">x</div>
 
-    <!-- 매뉴얼 내용 -->
-    <section class="manual-container manual-outlined">
-      <h1 class="manual-title manual-outlined">Game manual</h1>
+    <section class="manual-container">
 
-      <div class="manual-body manual-outlined">
-GOAL        Reach the Red Circle (Bottom-Right)
-MOVE        Use Arrow Keys (↑ ↓ ← →)
-BOSS        Run away from the Red Monster! (Hard Mode)
-ITEMS       Avoid these traps:
+      <h1 class="title-outlined">Game manual</h1>
 
-[BLUE]      Slow Down (30s)
-[PURPLE]    Reverse controls (15s)
-[RED]       Time Penalty (-30s)
+      <div class="row">
+        <div class="label">GOAL</div>
+        <div class="value">Reach the Red Circle (Bottom-Right)</div>
       </div>
 
-      <!-- CLOSED 버튼: level.html로 이동 -->
-      <a href="level.html" class="manual-close-btn manual-outlined">
-        CLOSED
-      </a>
+      <div class="row">
+        <div class="label">MOVE</div>
+        <div class="value">Use Arrow Keys (↑ ↓ ← →)</div>
+      </div>
+
+      <div class="row">
+        <div class="label">BOSS</div>
+        <div class="value">Run away from the Red Monster! (Hard Mode)</div>
+      </div>
+
+      <div class="row">
+        <div class="label">ITEMS</div>
+        <div class="value">Avoid these traps:</div>
+      </div>
+
+      <!-- 아이템 리스트 -->
+      <div class="row">
+        <div class="label blue">[BLUE]</div>
+        <div class="value">Slow Down (30s)</div>
+      </div>
+
+      <div class="row">
+        <div class="label purple">[PURPLE]</div>
+        <div class="value">Reverse Controls (15s)</div>
+      </div>
+
+      <div class="row">
+        <div class="label red">[RED]</div>
+        <div class="value">Time Penalty (-30s)</div>
+      </div>
+
+      <!-- CLOSE 버튼 -->
+      <a href="level.html" class="manual-close-btn">CLOSED</a>
+
     </section>
   </main>
 </body>
