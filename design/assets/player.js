@@ -1,46 +1,105 @@
-<script>
-  // 112px 기반을 유지하고, 실제 사용 크기는 SCALE로 제어
-  const BASE = 112;
-  const SCALE = 0.25; // ← 1/4
-  const SIZE = Math.round(BASE * SCALE); // 28
+// assets/player.js
+export class Player {
+  constructor(gridX, gridY, cellSize, color = "#d9d9d9", baseSpeed = 2) {
+    this.grid_x = gridX;
+    this.grid_y = gridY;
+    this.cellSize = cellSize;
 
-  // 보기 좋은 랜덤 컬러 (HSL)
-  function randomColor() {
-    const h = Math.floor(Math.random() * 360);
-    const s = 70 + Math.floor(Math.random() * 20); // 70~89%
-    const l = 55;                                   // 밝기 고정(가독성)
-    return `hsl(${h} ${s}% ${l}%)`;
+    this.color = color;
+    this.speed = baseSpeed;
+    this.baseSpeed = baseSpeed;
+
+    // 현재 픽셀 위치 (셀 중앙 기준)
+    this.pixel_x = gridX * cellSize + cellSize / 2;
+    this.pixel_y = gridY * cellSize + cellSize / 2;
+    this.target_x = this.pixel_x;
+    this.target_y = this.pixel_y;
+
+    // 이동 중인지 여부 (null이면 정지)
+    this.moving_direction = null;  // dir 객체 그대로 저장
+
+    // DOM 엘리먼트 생성 (player.css에서 스타일 입힘)
+    this.el = document.createElement("div");
+    this.el.className = "player";
+    this.el.style.background = this.color;
+
+    const eye = document.createElement("div");
+    eye.className = "eye";
+    this.el.appendChild(eye);
+
+    this.updateDom();
   }
 
-  // 플레이어 생성: parent 내부 (x,y) 위치에 스폰
-  function spawnPlayer(parent, x = 0, y = 0) {
-    const el = document.createElement('div');
-    el.className = 'player';
-    el.style.setProperty('--size', SIZE + 'px');
-    el.style.left = x + 'px';
-    el.style.top  = y + 'px';
-    el.style.setProperty('--color', randomColor()); // 생성 즉시 랜덤색
-
-    const eye = document.createElement('div');
-    eye.className = 'eye';
-    el.appendChild(eye);
-
-    parent.appendChild(el);
-    return el;
+  // DOM 위치 갱신
+  updateDom() {
+    this.el.style.left = `${this.pixel_x}px`;
+    this.el.style.top  = `${this.pixel_y}px`;
   }
 
-  // 색만 바꾸고 싶을 때 (맵 변경 이벤트 등에서 호출)
-  function recolorPlayer(el) {
-    el.style.setProperty('--color', randomColor());
-    
+  /**
+   * 이동 시작 시도
+   * @param {number[][]} grid - 미로 격자 (각 셀은 비트 플래그)
+   * @param {{dx:number, dy:number, bit:number}} dir - 방향 객체
+   * @param {number} cellSize - 한 칸 픽셀 크기
+   */
+  start_move(grid, dir, cellSize) {
+    // 이미 이동 중이면 무시
+    if (this.moving_direction !== null) return;
+
+    const nx = this.grid_x + dir.dx;
+    const ny = this.grid_y + dir.dy;
+
+    // 맵 밖으로 나가면 이동 불가
+    if (ny < 0 || ny >= grid.length) return;
+    if (nx < 0 || nx >= grid[0].length) return;
+
+    // 현재 셀에서 그 방향으로 길이 열려 있는지 확인
+    const cell = grid[this.grid_y][this.grid_x];
+
+    // cell의 해당 비트가 0이면 = 길 없음(벽)
+    if ((cell & dir.bit) === 0) {
+      return;
+    }
+
+    // 실제 그리드 좌표 업데이트
+    this.grid_x = nx;
+    this.grid_y = ny;
+
+    // 도착해야 할 픽셀 좌표(셀 중앙)
+    this.target_x = this.grid_x * cellSize + cellSize / 2;
+    this.target_y = this.grid_y * cellSize + cellSize / 2;
+
+    // 이동 중 상태로 전환
+    this.moving_direction = dir;
   }
 
-  // === 사용 예시 ===
-  document.addEventListener('DOMContentLoaded', () => {
-    const root = document.getElementById('game-root'); // 보드/콘텐츠 영역
-    const player = spawnPlayer(root, 40, 40);          // (40,40)에 스폰
+  // 한 프레임마다 호출
+  update() {
+    if (this.moving_direction === null) {
+      this.updateDom();
+      return;
+    }
 
-    // 예: 3초 후 색상 변경 (나중에 맵 변경 이벤트에 연결하면 됨)
-    setTimeout(() => recolorPlayer(player), 3000);
-  });
-</script>
+    const dx = this.target_x - this.pixel_x;
+    const dy = this.target_y - this.pixel_y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist <= this.speed) {
+      // 도착
+      this.pixel_x = this.target_x;
+      this.pixel_y = this.target_y;
+      this.moving_direction = null;
+    } else {
+      // 속도 비율만큼 이동
+      this.pixel_x += (dx / dist) * this.speed;
+      this.pixel_y += (dy / dist) * this.speed;
+    }
+
+    this.updateDom();
+  }
+
+  // 캔버스에 직접 그리는 건 없고 DOM만 쓰는 구조라 비워둠
+  draw(cellSize) {
+    // 필요하면 나중에 캔버스 기반 이펙트 추가 가능
+  }
+}
