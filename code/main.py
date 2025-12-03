@@ -16,7 +16,7 @@ import menu
 
 SLOW_DURATION_MS = 30_000       
 REVERSE_DURATION_MS = 15_000    
-TIME_LEFT_MS = 30_000           
+TIME_LEFT_MS = 15_000          
 
 MAX_DEBUFF_ITEMS = 25
 
@@ -206,8 +206,18 @@ def main():
                             if it.dtype == DebuffType.SLOW: debuff_state.slow_until_ms = max(now_ms, debuff_state.slow_until_ms) + SLOW_DURATION_MS
                             elif it.dtype == DebuffType.REVERSE: debuff_state.reverse_until_ms = max(now_ms, debuff_state.reverse_until_ms) + REVERSE_DURATION_MS
                             elif it.dtype == DebuffType.TIME_LEFT:
-                                start_time_ms += 30000
-                                remaining_time_ms = max(0, remaining_time_ms - 30000)
+                                elapsed_ms = now_ms - start_time_ms
+                                remaining_time_ms = max(0, total_limit_ms - elapsed_ms)
+
+                                # 30초 감소
+                                new_remaining_ms = max(0, remaining_time_ms - TIME_LEFT_MS)
+
+                                # start_time_ms 를 다시 계산해서 타이머 일관성 유지
+                                new_elapsed_ms = total_limit_ms - new_remaining_ms
+                                start_time_ms = now_ms - new_elapsed_ms
+
+                                # 디버깅용 갱신
+                                remaining_time_ms = new_remaining_ms
                         else: next_items.append(it)
                     debuff_items = next_items
 
