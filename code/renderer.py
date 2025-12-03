@@ -33,13 +33,14 @@ def draw_debuff_items(surface, items, cell_size):
         r = max(6, cell_size // 3)  
         pygame.draw.circle(surface, (0, 0, 0), (cx, cy), r)           
         pygame.draw.circle(surface, (180, 180, 180), (cx, cy), r, 2)
-def draw_debuff_hud(surface, debuff_state, now_ms, remaining_time_ms, font):
+def draw_debuff_hud(surface, debuff_state, now_ms, remaining_time_ms, font, attack_charges):
     """
     surface            : game_surface
     debuff_state       : DebuffState 인스턴스
     now_ms             : pygame.time.get_ticks()
     remaining_time_ms  : 전체 게임 남은 시간 (ms)
     font               : pygame.font.SysFont(None, 24)
+    attack_charges     : 남은 공격 아이템 개수 (int)
     """
     lines = []
 
@@ -47,6 +48,8 @@ def draw_debuff_hud(surface, debuff_state, now_ms, remaining_time_ms, font):
     total_sec = max(0, int(remaining_time_ms / 1000))
     lines.append(("TIME LEFT", f"{total_sec}s"))
 
+    # 추가. 1.1) 공격 아이템 개수 표시
+    lines.append(("ATTACK", f"{attack_charges}x"))
     # 2) 슬로우 디버프 남은 시간
     if debuff_state.is_slow(now_ms):
         sec = debuff_state.time_left(now_ms, debuff_state.slow_until_ms)
@@ -76,6 +79,8 @@ def draw_debuff_hud(surface, debuff_state, now_ms, remaining_time_ms, font):
     for idx, (label, value) in enumerate(lines):
         if idx == 0:
             label_color = (255, 255, 0)     # TIME LEFT 강조
+        elif label == "ATTACK":
+            label_color = (255, 255, 0)     # ATTACK 강조
         else:
             label_color = (255, 180, 180)   # 디버프 이름
         value_color = (200, 220, 255)
