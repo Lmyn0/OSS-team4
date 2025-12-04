@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>Game Manual</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="https://cdn.quiple.dev/galmuri.css">
+  <link rel="stylesheet" href="assets/frame.css">
+
+  <style>
+    body {
+      margin: 0;
+      height: 100%;
+      background: #e9f4ff;
+      display: grid;
+      place-items: center;
+      font-family: 'Galmuri7', sans-serif;
+    }
+
+    .component5 {
+      position: relative;
+      width: 695px;
+      height: 563px;
+    }
+
+    /* 제목 아웃라인 */
+    .title-outlined {
+      color: #E8EB2E;
+      -webkit-text-stroke: 2.5px #000;
+      text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000;
+      font-size: 48px;
+      margin: 0 0 20px 0;
+      letter-spacing: 1px;
+    }
+
+    /* 내용 전체 컨테이너 (조금 위로 올림) */
+    .manual-container {
+      position: absolute;
+      left: 50%;
+      top: 46%;                 /* 기존 52% → 46% */
+      transform: translate(-50%, -50%);
+      width: 610px;
+      height: 360px;
+      box-sizing: border-box;
+      padding: 20px 35px 70px;  /* 아래는 버튼 여유 공간 */
+    }
+
+    /* 2열 구조 */
+    .row {
+      display: flex;
+      flex-direction: row;
+      margin-bottom: 12px;
+    }
+
+    .label {
+      width: 110px;
+      font-size: 22px;
+      color: #FFFFFF;
+      text-shadow: 1px 1px #000;
+    }
+
+    .value {
+      flex: 1;
+      font-size: 22px;
+      color: #FFFFFF;
+      text-shadow: 1px 1px #000;
+    }
+
+    /* 아이템 색상 */
+    .blue   { color: #3bb0ff; }
+    .purple { color: #b03bff; }
+    .red    { color: #ff3b3b; }
+
+    /* CLOSED 버튼 — 오른쪽 하단 배치 */
+    .manual-close-btn {
+      position: absolute;
+      right: 40px;     /* 오른쪽에서 40px */
+      bottom: 28px;    /* 아래에서 28px */
+      width: 150px;
+      height: 40px;
+
+      background: #E8EB2E;
+      border: 3px solid #000;
+      border-radius: 10px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 24px;
+      color: #000;
+      font-weight: 700;
+      text-decoration: none;
+
+      box-shadow: 3px 3px 0 #000;
+      transition: 0.08s ease;
+    }
+
+    .manual-close-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 5px 5px 0 #000;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="component5">
+    <!-- 기본 프레임 -->
+    <div class="rect3"></div>
+    <div class="rect4"></div>
+
+    <div class="rect7"></div>
+    <div class="rect6"></div>
+    <div class="rounded-rect"></div>
+
+    <div class="icon-eu">ㅡ</div>
+    <div class="icon-mi">ㅁ</div>
+    <div class="icon-x">x</div>
+
+    <section class="manual-container">
+
+      <h1 class="title-outlined">Game manual</h1>
+
+      <div class="row">
+        <div class="label">GOAL</div>
+        <div class="value">Reach the Red Circle (Bottom-Right)</div>
+      </div>
+
+      <div class="row">
+        <div class="label">MOVE</div>
+        <div class="value">Use Arrow Keys (↑ ↓ ← →)</div>
+      </div>
+
+      <div class="row">
+        <div class="label">BOSS</div>
+        <div class="value">Run away from the Red Monster! (Hard Mode)</div>
+      </div>
+
+      <div class="row">
+        <div class="label">ITEMS</div>
+        <div class="value">Avoid these traps:</div>
+      </div>
+
+      <!-- 아이템 리스트 -->
+      <div class="row">
+        <div class="label blue">[BLUE]</div>
+        <div class="value">Slow Down (30s)</div>
+      </div>
+
+      <div class="row">
+        <div class="label purple">[PURPLE]</div>
+        <div class="value">Reverse Controls (15s)</div>
+      </div>
+
+      <div class="row">
+        <div class="label red">[RED]</div>
+        <div class="value">Time Penalty (-30s)</div>
+      </div>
+
+      <!-- CLOSE 버튼 -->
+      <a href="level.html" class="manual-close-btn">CLOSED</a>
+
+    </section>
+  </main>
+</body>
+</html>

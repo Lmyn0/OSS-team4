@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Start</title>
   <link rel="stylesheet" href="https://cdn.quiple.dev/galmuri.css">
-  <link rel="stylesheet" href="frame.css">
+  <link rel="stylesheet" href="assets/frame.css">
   <style>
     /* ====== Ground (땅) ====== */
     .ground {
@@ -22,27 +22,28 @@
     .start-line {
       position: absolute;
       left: 50%;
-      bottom: 10%; /* 땅 위 여백 */
+      bottom: 10%;
       transform: translateX(-50%);
       display: flex;
       align-items: center;
-      gap: 18px; /* >> 와 start 사이 간격 */
+      gap: 18px;
       text-decoration: none;
     }
-/* 로고 영역 */
-.logo-wrap {
-  position: absolute;
-  left: 50%;
-  top: 10%;          /* 위에서 어느 정도 내려올지 (원하면 숫자 조절) */
-  transform: translateX(-50%);
-}
 
-.logo-zero {
-  width: 700px;      /* 로고 크기 (원하는 대로 숫자 조절) */
-  max-width: 100%;
-  image-rendering: pixelated; /* 살짝 픽셀 느낌 */
-  display: block;
-}
+    /* 로고 영역 */
+    .logo-wrap {
+      position: absolute;
+      left: 50%;
+      top: 10%;
+      transform: translateX(-50%);
+    }
+
+    .logo-zero {
+      width: 700px;
+      max-width: 100%;
+      image-rendering: pixelated;
+      display: block;
+    }
 
     .chevrons, .start {
       font-family: 'Galmuri7';
@@ -64,7 +65,6 @@
       line-height: 90px;
     }
 
-    /* hover 효과 */
     .start-line:hover .chevrons,
     .start-line:hover .start {
       transform: scale(1.05);
@@ -91,29 +91,30 @@
 
     <!-- 콘텐츠 -->
     <section class="content-slot">
-        <!-- ZERO EXIT 로고 -->
-  <div class="logo-wrap">
-    <img src="C:\팀플\image\zeroexit.png" alt="ZERO EXIT" class="logo-zero">
-  </div>
+      <!-- ZERO EXIT 로고 -->
+      <div class="logo-wrap">
+        <img src="zeroexit.png" alt="ZERO EXIT" class="logo-zero">
+      </div>
 
-  <div class="ground"></div>
       <div class="ground"></div>
 
-      <!-- >> start 버튼 -->
-      <a class="start-line" href="level.html" aria-label="시작하기">
+      <!-- >> start 버튼: manual.html로 이동 -->
+      <a class="start-line" href="manual.html" aria-label="게임 설명 보기">
         <span class="chevrons">&gt;&gt;</span>
         <span class="start">start</span>
       </a>
     </section>
   </main>
 
+  <!-- 엔터/스페이스로도 manual.html 이동하고 싶으면 사용 -->
+  <!--
   <script>
-    // Enter나 스페이스로도 시작
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
-        location.href = 'level.html';
+        location.href = 'manual.html';
       }
     });
   </script>
+  -->
 </body>
 </html>

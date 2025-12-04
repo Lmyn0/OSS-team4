@@ -2,193 +2,134 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <title>YOU LOSE! - 8bit Style</title>
+  <title>YOU LOSE!</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+  <!-- 공통 폰트 + 프레임 CSS -->
   <link rel="stylesheet" href="https://cdn.quiple.dev/galmuri.css">
+  <link rel="stylesheet" href="assets/frame.css">
 
   <style>
-    /* 페이지 기본 리셋 + 가운데 정렬 */
-    html, body {
-      height: 100%;
-      margin: 0;
-      background: #e9f4ff; /* 외부 배경색 */
-      display: grid;
-      place-items: center;
-      font-family: 'Galmuri7', system-ui, -apple-system, Segoe UI, Roboto,
-        Apple SD Gothic Neo, "Noto Sans KR", sans-serif;
-    }
+    /* ====== LOSE 전용 내부 레이아웃 ====== */
 
-    /* Component 5 컨테이너 */
-    .component5 {
+    .lose-inner {
       position: relative;
-      width: 695px;
-      height: 563px;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* 창에 약간의 입체감 부여 */
+      width: 100%;
+      height: 100%;
+      background: #66BDEC;
     }
 
-    /* Rectangle 3 (바탕) */
-    .rect3 {
+    .lose-sky {
       position: absolute;
       left: 0;
       right: 0;
       top: 0;
-      bottom: 0;
-      background: #CAEBFD;
-      border-radius: 21px;
-    }
-
-    /* Rectangle 4 (내부 파란 패널) */
-    .rect4 {
-      position: absolute;
-      /* Figma 스펙의 %를 px로 변환하여 적용 */
-      left: 14px; /* 2.01% of 695px ≈ 14px */
-      right: 15px; /* 2.15% of 695px ≈ 15px */
-      top: 45px; /* 8.02% of 563px ≈ 45px */
-      bottom: 15px; /* 2.67% of 563px ≈ 15px */
-      background: #66BDEC;
-      border-radius: 21px;
-      overflow: hidden;
-    }
-
-    /* 상단 오른쪽 버튼 3개 컨테이너 */
-    .window-controls {
-      position: absolute;
-      right: 2.58%;
-      top: 1.65%;
-      height: 5.14%; /* 100% - 93.21% = 6.79% -> height로 지정 */
+      bottom: 153px;
       display: flex;
-      gap: 7px; /* 버튼 간격 조정 */
       align-items: center;
+      justify-content: center;
     }
 
-    /* 버튼 공통 스타일 */
-    .window-btn {
-      width: 25px; /* 너비 임의 지정 */
-      height: 25px; /* 높이 임의 지정 */
-      background: #66BDEC;
-      border-radius: 21px;
-      display: grid;
-      place-items: center;
-      color: #000000;
-      font-weight: 400;
-      user-select: none;
-      box-sizing: border-box;
-      line-height: 1; /* 아이콘 중앙 정렬을 위해 */
+    .lose-text {
+      font-size: 112px;
+      line-height: 128px;
+      color: #E8EB2E;
+      white-space: nowrap;
+      text-align: center;
+
+      -webkit-text-stroke: 3px #000000;
+      text-shadow: 4px 4px 0 #000000;
+      filter: blur(0.6px);
+      image-rendering: pixelated;
     }
 
-    /* 아이콘 개별 스타일 */
-    .icon-eu { font-size: 20px; line-height: 0.5em; } /* ㅡ */
-    .icon-mi { font-size: 20px; line-height: 0.8em; padding-top: 2px;} /* ㅁ */
-    .icon-x { font-size: 24px; line-height: 1.1em; } /* x */
-
-    /* =========================
-        게임 메시지 레이아웃
-        ========================= */
-
-    /* 바닥 영역 (갈색 부분) */
     .ground-wrap {
       position: absolute;
       left: 0;
       right: 0;
-      /* rect4 내부에서 하단에 배치 */
       bottom: 0;
-      height: 153px; /* rect4 높이 대비 153px */
+      height: 153px;
       background:
         radial-gradient(#4a3a32 1px, transparent 1px) 0 0/6px 6px,
         radial-gradient(#4a3a32 1px, transparent 1px) 3px 3px/6px 6px,
-        #654C40; /* 흙 패턴 + 갈색 배경 */
-      z-index: 1;
+        #654C40;
     }
 
-    /* 검은 선 (Rectangle 10) */
     .ground-line {
       position: absolute;
-      top: -7px; /* 갈색 영역 위쪽으로 7px */
+      top: -7px;
       left: 0;
       right: 0;
       height: 7px;
       background: #000000;
-      z-index: 2;
     }
 
-    /* YOU LOSE! 텍스트 (파란 영역) */
-    .win-text { /* 클래스명은 그대로 두고 텍스트 내용만 변경 */
-      position: absolute;
-      left: 50%;
-      /* 파란 영역 내에서 세로 중앙보다 약간 위쪽 */
-      top: 35%;
-      transform: translate(-50%, -50%); /* x축, y축 중앙 정렬 */
-      width: 660px; /* 원본 스펙 유지 */
-      height: 126px; /* 원본 스펙 유지 */
-      
-      font-size: 128px;
-      line-height: 144px;
-
-      color: #E8EB2E; /* 노란색 */
-      text-align: center;
-      white-space: nowrap;
-      
-      /* 픽셀 아트 텍스트 효과 */
-      -webkit-text-stroke: 3px #000000; /* 웹킷 브라우저 윤곽선 */
-      text-shadow:
-        4px 4px 0 #000000; /* 오른쪽 아래 그림자 */
-      filter: blur(0.6px); /* 원본의 blur(1px)와 유사하게 조정 */
-      image-rendering: pixelated; /* 픽셀 렌더링 */
-      z-index: 5;
-    }
-
-    /* >> Try again 텍스트 (갈색 영역) */
     .cta-text {
       position: absolute;
       left: 50%;
-      top: 50%; /* 갈색 바닥의 세로 중앙 */
-      transform: translate(-50%, -50%); /* x축, y축 중앙 정렬 */
+      top: 50%;
+      transform: translate(-50%, -50%);
       width: 606px;
       height: 124px;
-      
-      font-size: 96px;
-      line-height: 108px;
+
+      font-size: 72px;
+      line-height: 84px;
 
       color: #E8EB2E;
       text-align: center;
       white-space: nowrap;
-      
-      /* 픽셀 아트 텍스트 효과 */
+
       -webkit-text-stroke: 3px #000000;
-      text-shadow:
-        4px 4px 0 #000000;
+      text-shadow: 4px 4px 0 #000000;
       filter: blur(0.6px);
       image-rendering: pixelated;
-      z-index: 5;
-      cursor: pointer; /* 클릭 가능한 느낌 */
-    }
 
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
   <div class="component5">
+    <!-- 바깥 프레임 -->
     <div class="rect3"></div>
-    
-    <div class="window-controls">
-        <div class="window-btn icon-eu">ㅡ</div>
-        <div class="window-btn icon-mi">ㅁ</div>
-        <div class="window-btn icon-x">x</div>
-    </div>
-    
-    <div class="rect4">
-      
-      <div class="win-text">YOU LOSE!</div>
+    <div class="rect4"></div>
 
-      <div class="ground-wrap">
-        <div class="ground-line"></div>
-        
-        <div class="cta-text">>> Try again</div>
+    <div class="rect7"></div>
+    <div class="rect6"></div>
+    <div class="rounded-rect"></div>
+    <div class="icon-eu">ㅡ</div>
+    <div class="icon-mi">ㅁ</div>
+    <div class="icon-x">x</div>
+    <div class="rect8" aria-hidden="true"></div>
+
+    <!-- 컨텐츠 -->
+    <div class="content-slot">
+      <div class="lose-inner">
+        <div class="lose-sky">
+          <div class="lose-text">YOU LOSE!</div>
+        </div>
+
+        <div class="ground-wrap">
+          <div class="ground-line"></div>
+          <div class="cta-text" id="tryAgainBtn">&gt;&gt; Try again</div>
+        </div>
       </div>
-
     </div>
   </div>
+
+  <script>
+    // URL에서 d 파라미터 읽어와서 같은 난이도로 재시작
+    document.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const dKey = params.get("d") || "easy";
+
+      const btn = document.getElementById("tryAgainBtn");
+      btn.addEventListener("click", () => {
+        window.location.href = "background.html?d=" + encodeURIComponent(dKey);
+      });
+    });
+  </script>
 
 </body>
 </html>
