@@ -32,7 +32,13 @@ def level_page():
 def background_page():
     return render_template("background.html")
 
-# 4. 파이썬 pygame 버전 게임 실행 (필요하면 사용)
+# ⭐ 4. 게임 클리어 화면: win.html
+@app.route("/win")
+def win_page():
+    # design/win.html 을 템플릿으로 렌더링
+    return render_template("win.html")
+
+# 5. 파이썬 pygame 버전 게임 실행 (필요하면 사용)
 @app.route("/start-game")
 def start_game():
     # HTML / JS 에서 ?d=low 또는 ?d=hard 로 보낸다고 가정

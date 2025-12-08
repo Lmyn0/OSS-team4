@@ -6,7 +6,7 @@ export class Boss {
     this.grid_x = gridX;
     this.grid_y = gridY;
 
-    // 픽셀 좌표
+    // 픽셀 좌표 (셀의 왼쪽 위 기준)
     this.cellSize = cellSize;
     this.pixel_x = gridX * cellSize;
     this.pixel_y = gridY * cellSize;
@@ -16,7 +16,7 @@ export class Boss {
     this.hp = maxHP;
     this.isAlive = true;
 
-    // 애니메이션
+    // 애니메이션용 타이머
     this.anim = 0;
   }
 
@@ -42,20 +42,25 @@ export class Boss {
   draw(ctx) {
     if (!this.isAlive) return;
 
-    // 펄스 애니메이션
+    // 펄스 애니메이션 (살짝 커졌다 작아졌다)
     const pulse = Math.sin(this.anim) * 2;
-    const size = this.cellSize - 8 + pulse;
+
+    // 🔥 보스 기본 사이즈: 셀의 90% 정도로 크게
+    const baseSize = this.cellSize * 0.9;
+    const size     = baseSize + pulse;
+
+    // 셀 안에서 가운데로 오도록 오프셋
     const offset = (this.cellSize - size) / 2;
 
     const x = this.pixel_x + offset;
     const y = this.pixel_y + offset;
 
-    // 보스 본체
+    // 보스 본체 (빨간 정사각형)
     ctx.fillStyle = "rgb(200, 0, 0)";
     ctx.fillRect(x, y, size, size);
 
-    // --- 눈 ---
-    const eyeR = size / 6;
+    // --- 눈 그리기 ---
+    const eyeR       = size / 6;
     const eyeOffsetX = size * 0.25;
     const eyeOffsetY = size * 0.3;
 
@@ -72,17 +77,19 @@ export class Boss {
     ctx.fill();
 
     // HP 바
-    this.drawHP(ctx);
+    this.drawHP(ctx, x, y, size);
   }
 
   // ----- HP 바 -----
-  drawHP(ctx) {
-    const barWidth = this.cellSize;
+  drawHP(ctx, x, y, size) {
+    const barMargin = 6;   // 보스와 HP바 사이 간격
     const barHeight = 6;
-    const barX = this.pixel_x;
-    const barY = this.pixel_y - 10;
+    const barWidth  = size;
 
-    // 배경
+    const barX = x;
+    const barY = y - barMargin - barHeight;
+
+    // 배경 (회색)
     ctx.fillStyle = "rgb(50, 50, 50)";
     ctx.fillRect(barX, barY, barWidth, barHeight);
 
@@ -90,7 +97,7 @@ export class Boss {
     const ratio = this.hp / this.maxHP;
     const fillWidth = barWidth * ratio;
 
-    // 색상 (30% 이하 빨강)
+    // 체력 색상 (30% 이하 빨강)
     ctx.fillStyle = ratio > 0.3 ? "lime" : "red";
     ctx.fillRect(barX, barY, fillWidth, barHeight);
   }
