@@ -1,26 +1,39 @@
-/* 1/4 사이즈 기본값: 28px (112px * 0.25) */
+/*
+ * assets/player.css - 최종 수정
+ * 순수한 마젠타 원 캐릭터 (눈, 입 제거)
+ */
+
 .player {
-  --size: 28px;            /* 필요하면 JS에서 재설정 가능 */
-  --color: #d9d9d9;        /* 생성 시 JS가 랜덤으로 바꿈 */
-
-  position: absolute;
-  width: var(--size);
-  height: var(--size);
-  box-sizing: border-box;
-  background: var(--color);
-  border: 3px solid #000;  /* Figma처럼 굵은 외곽선 */
-  border-radius: 50%;
+    /* 이 변수는 JS의 CELL_SIZE와 연동되어 캐릭터 크기를 결정합니다. */
+    --size: 28px; 
+    --color: #ff00ff; /* 현재 캐릭터 색상 (마젠타) */
+    
+    position: absolute;
+    /* 🚨 크기: 플레이어 몸체만 남김 */
+    width: var(--size);
+    height: var(--size);
+    
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%); /* 중앙 정렬 */
+    box-sizing: border-box;
+    
+    /* 🚨 몸통 모양 */
+    background: var(--color);
+    border: 3px solid #000;
+    border-radius: 50%; /* 원형 */
+    
+    transition: transform 0.1s linear; /* 이동 애니메이션 */
+    
+    /* 🚨 display: flex 제거 - 눈/입 배치 필요 없음 */
+    display: block; 
+    
+    /* 내부 눈/입 위치 조절 속성 모두 제거 */
 }
 
-/* 눈 (Ellipse 2 비율로 축소) */
-.player .eye {
-  position: absolute;
-  width: calc(var(--size) * 0.22);
-  height: calc(var(--size) * 0.22);
-  right: calc(var(--size) * 0.12);
-  top:   calc(var(--size) * 0.32);
-  box-sizing: border-box;
-  background: #000;
-  border: 3px solid #000;
-  border-radius: 50%;
-}
+/* 🚨🚨🚨 아래 모든 눈/입 관련 스타일을 완전히 삭제합니다. 🚨🚨🚨 */
+
+/* .player .eye-box { ... } */
+/* .player .eye { ... } */
+/* .player .eye .pupil { ... } */
+/* .player .mouth { ... } */

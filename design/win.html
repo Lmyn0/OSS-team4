@@ -2,38 +2,37 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <title>YOU WIN!</title>
+  <title>YOU WIN !</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- 공통 폰트 + 프레임 CSS -->
   <link rel="stylesheet" href="https://cdn.quiple.dev/galmuri.css">
   <link rel="stylesheet" href="assets/frame.css">
 
   <style>
     /* ====== WIN 전용 내부 레이아웃 ====== */
 
-    .win-inner {
+    .lose-inner {
       position: relative;
       width: 100%;
       height: 100%;
-      background: #66BDEC; /* rect4와 동일 */
+      background: #66BDEC; /* 배경색은 그대로 유지 */
     }
 
-    /* 윗쪽 하늘 영역 (텍스트) */
-    .win-sky {
+    .lose-sky {
       position: absolute;
       left: 0;
       right: 0;
       top: 0;
-      bottom: 153px; /* 바닥 높이만큼 제외 */
+      /* 땅 영역(153px)만큼 제외하고 하늘 영역을 설정 */
+      bottom: 153px; 
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .win-text {
-      font-size: 128px;
-      line-height: 144px;
+    .lose-text {
+      font-size: 112px;
+      line-height: 128px;
       color: #E8EB2E;
       white-space: nowrap;
       text-align: center;
@@ -43,8 +42,8 @@
       filter: blur(0.6px);
       image-rendering: pixelated;
     }
-
-    /* 바닥 영역 */
+    
+    /* 갈색 땅 영역 (다시 추가) */
     .ground-wrap {
       position: absolute;
       left: 0;
@@ -57,6 +56,7 @@
         #654C40;
     }
 
+    /* 땅 위의 검은 선 (다시 추가) */
     .ground-line {
       position: absolute;
       top: -7px;
@@ -65,3 +65,46 @@
       height: 7px;
       background: #000000;
     }
+
+    /* "Try again" 버튼 관련 스타일은 불필요하므로 주석 처리 또는 제거 */
+    /*
+    .cta-text {
+      ...
+    }
+    */
+  </style>
+</head>
+<body>
+
+  <div class="component5">
+    <div class="rect3"></div>
+    <div class="rect4"></div>
+
+    <div class="rect7"></div>
+    <div class="rect6"></div>
+    <div class="rounded-rect"></div>
+    <div class="icon-eu">ㅡ</div>
+    <div class="icon-mi">ㅁ</div>
+    <div class="icon-x">x</div>
+    <div class="rect8" aria-hidden="true"></div>
+
+    <div class="content-slot">
+      <div class="lose-inner">
+        <div class="lose-sky">
+          <div class="lose-text">YOU WIN !</div>
+        </div>
+
+        <div class="ground-wrap">
+          <div class="ground-line"></div>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 승리 화면이므로 아무 동작도 하지 않습니다.
+  </script>
+
+</body>
+</html>

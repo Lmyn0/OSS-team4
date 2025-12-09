@@ -5,11 +5,10 @@
   <title>Component 5 + Maze Grid (FIT)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- 갈무리 폰트 (선택 사항) -->
   <link rel="stylesheet" href="https://cdn.quiple.dev/galmuri.css">
 
   <style>
-    /* 페이지 기본 리셋 + 가운데 정렬 (grid → flex로 변경) */
+    /* 페이지 기본 리셋 + 가운데 정렬 */
     html, body {
       height: 100%;
       margin: 0;
@@ -21,14 +20,14 @@
         Apple SD Gothic Neo, "Noto Sans KR", sans-serif;
     }
 
-    /* Component 5 컨테이너 */
+    /* Component Container */
     .component5 {
       position: relative;
       width: 695px;
       height: 563px;
     }
 
-    /* Rectangle 3 (바탕) */
+    /* Rectangle 3 */
     .rect3 {
       position: absolute;
       inset: 0;
@@ -36,7 +35,7 @@
       border-radius: 21px;
     }
 
-    /* Rectangle 4 (내부 파란 패널) */
+    /* Rectangle 4 */
     .rect4 {
       position: absolute;
       left: 2.01%;
@@ -45,12 +44,13 @@
       bottom: 2.67%;
       background: #66BDEC;
       border-radius: 21px;
+      overflow: hidden;
     }
 
-    /* 상단 오른쪽 버튼 3개 */
-    .rounded-rect,
+    /* Header Buttons */
+    .rect7,
     .rect6,
-    .rect7 {
+    .rounded-rect {
       position: absolute;
       top: 1.65%;
       bottom: 93.21%;
@@ -61,98 +61,58 @@
     .rect6        { left: 83.81%; right: 9.74%; }
     .rect7        { left: 76.65%; right: 16.91%; }
 
-    /* 텍스트 아이콘: ㅡ, ㅁ, x */
-    .icon-eu {
-      position: absolute;
-      left: 78.8%;
-      right: 19.05%;
-      top: 1.44%;
-      bottom: 91.36%;
-      font-size: 20px;
-      line-height: 22px;
-      color: #000;
-      user-select: none;
-    }
-    .icon-mi {
-      position: absolute;
-      left: 85.67%;
-      right: 12.18%;
-      top: 1.44%;
-      bottom: 91.36%;
-      font-size: 20px;
-      line-height: 22px;
-      color: #000;
-      user-select: none;
-    }
+    /* Icons */
+    .icon-eu,
+    .icon-mi,
     .icon-x {
       position: absolute;
-      left: 93.12%;
-      right: 4.73%;
-      top: 0.62%;
-      bottom: 92.18%;
-      font-size: 24px;
-      line-height: 27px;
       color: #000;
       user-select: none;
     }
+    .icon-eu { left: 78.8%; top: 1.44%; font-size: 20px; line-height: 22px; }
+    .icon-mi { left: 85.67%; top: 1.44%; font-size: 20px; line-height: 22px; }
+    .icon-x  { left: 93.12%; top: 0.62%; font-size: 24px; line-height: 27px; }
 
-    /* 내부 보드(갈색 사각형) */
+    /* Board (brown container) */
     .board {
       position: absolute;
-      inset: 16px;                 /* 파란 패널(rect4) 안쪽 여백 */
-      background: #654C40;         /* 갈색 배경 */
-      border: 5px solid #000;      /* 검정 테두리 */
-      border-radius: 19px;         /* 모서리 둥글게 */
+      inset: 16px;
+      background: #654C40;
+      border: 5px solid #000;
+      border-radius: 19px;
       overflow: hidden;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12); /* 은은한 안쪽 라인 */
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
     }
 
-    /* 캔버스: 크기는 JS에서 width/height 지정, CSS에서는 위치/렌더링만 */
     #gridCanvas {
       position: absolute;
       left: 0;
       top: 0;
       display: block;
       image-rendering: pixelated;
-      /* width/height/inset 절대 지정하지 않기! */
     }
 
-    /* 배우 레이어 (캐릭터 올라가는 층) */
     #actors {
       position: absolute;
       inset: 0;
-      pointer-events: none; /* 클릭 방해 방지 */
+      pointer-events: none;
     }
 
+    /* Player (no eyes) */
     .player {
       --size: 28px;
       --color: #d9d9d9;
-
       position: absolute;
       width: var(--size);
       height: var(--size);
-      left: 0;
-      top: 0;
       transform: translate(-50%, -50%);
-      box-sizing: border-box;
       background: var(--color);
       border: 3px solid #000;
       border-radius: 50%;
-    }
-
-    .player .eye {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      right: 4px;
-      top: 9px;
-      background: #000;
-      border: 3px solid #000;
-      border-radius: 50%;
       box-sizing: border-box;
     }
 
-    /* HUD (시간/디버프 표시창) */
+    /* HUD */
     #hud {
       position: absolute;
       top: 10px;
@@ -163,12 +123,10 @@
       border-radius: 12px;
       font-size: 13px;
       color: #fff;
-      box-sizing: border-box;
     }
 
-    /* 숨김 요소 (원본 명세 유지) */
+    /* Hidden rectangle (unused original component) */
     .rect8 {
-      box-sizing: border-box;
       position: absolute;
       visibility: hidden;
       left: 3.44%;
@@ -176,39 +134,37 @@
       top: 11.93%;
       bottom: 4.94%;
       background: #654C40;
-      border: 5px solid #000000;
+      border: 5px solid #000;
       border-radius: 8px;
     }
+
   </style>
 </head>
+
 <body tabindex="0">
   <div class="component5" role="img" aria-label="Component 5 with Maze Grid">
+
     <div class="rect3"></div>
 
-    <!-- 내부 파란 패널 -->
     <div class="rect4">
-      <!-- 여기 보드를 끼워넣음 -->
       <div class="board" id="board">
         <canvas id="gridCanvas"></canvas>
-        <div id="actors" class="actors"></div>
+        <div id="actors"></div>
         <div id="hud"></div>
       </div>
     </div>
 
-    <!-- 상단 버튼 더미 -->
     <div class="rect7"></div>
     <div class="rect6"></div>
     <div class="rounded-rect"></div>
 
-    <!-- 아이콘 텍스트 -->
     <div class="icon-eu">ㅡ</div>
     <div class="icon-mi">ㅁ</div>
     <div class="icon-x">x</div>
 
-    <!-- 숨김 박스 (원본 명세용) -->
     <div class="rect8"></div>
   </div>
-  <!-- JS 게임 로직: 한 번에 모듈 불러오기 -->
+
   <script type="module">
     import './assets/maze.js';
     import './assets/player.js';
