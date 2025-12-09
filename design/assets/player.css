@@ -1,17 +1,17 @@
 /*
  * assets/player.css - 최종 수정
- * 순수한 마젠타 원 캐릭터 (눈, 입 제거)
+ * 순수한 원 캐릭터 (크기 제어는 JS의 인라인 스타일로 위임)
  */
 
 .player {
-    /* 이 변수는 JS의 CELL_SIZE와 연동되어 캐릭터 크기를 결정합니다. */
-    --size: 28px; 
-    --color: #ff00ff; /* 현재 캐릭터 색상 (마젠타) */
+    /* 🚨 제거: --size 변수는 JS 인라인 스타일과 충돌/혼란을 일으키므로 삭제 */
+    /* 🚨 제거: --color 변수는 JS 인라인 스타일로 배경색이 설정되므로 삭제 */
     
     position: absolute;
-    /* 🚨 크기: 플레이어 몸체만 남김 */
-    width: var(--size);
-    height: var(--size);
+    
+    /* 🚨 제거: width와 height 속성은 JS가 인라인 스타일(player.el.style.width)로 직접 설정하므로 삭제 */
+    /* width: var(--size); */
+    /* height: var(--size); */
     
     left: 0;
     top: 0;
@@ -19,7 +19,7 @@
     box-sizing: border-box;
     
     /* 🚨 몸통 모양 */
-    background: var(--color);
+    background: #ff00ff; /* JS에서 랜덤 색상으로 덮어씌워지지만, 기본값으로 유지 */
     border: 3px solid #000;
     border-radius: 50%; /* 원형 */
     
@@ -31,9 +31,4 @@
     /* 내부 눈/입 위치 조절 속성 모두 제거 */
 }
 
-/* 🚨🚨🚨 아래 모든 눈/입 관련 스타일을 완전히 삭제합니다. 🚨🚨🚨 */
-
-/* .player .eye-box { ... } */
-/* .player .eye { ... } */
-/* .player .eye .pupil { ... } */
-/* .player .mouth { ... } */
+/* 🚨🚨🚨 아래 모든 눈/입 관련 스타일은 삭제된 상태로 유지합니다. 🚨🚨🚨 */

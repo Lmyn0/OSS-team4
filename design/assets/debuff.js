@@ -1,10 +1,10 @@
-// debuff.js
+// debuff.js (수정된 최종 버전)
 import { N, S, E, W, DX, DY } from "./maze.js";
 
 // Python DebuffType Enum 대응
 export const DebuffType = {
-  SLOW: "SLOW",        // 플레이어 속도 감소
-  REVERSE: "REVERSE",  // 조작 반전
+  SLOW: "SLOW", 		// 플레이어 속도 감소
+  REVERSE: "REVERSE", 	// 조작 반전
   TIME_LEFT: "TIME_LEFT" // 남은 게임 시간 차감
 };
 
@@ -25,13 +25,13 @@ export class DebuffItem {
 // Python DebuffState 대응
 export class DebuffState {
   /**
-   * @param {number} slowDurationMs     - SLOW 지속 시간(ms)
-   * @param {number} reverseDurationMs  - REVERSE 지속 시간(ms)
-   * @param {number} slowMultiplier     - 속도 배율 (기본 0.5)
+   * @param {number} slowDurationMs 	- SLOW 지속 시간(ms)
+   * @param {number} reverseDurationMs - REVERSE 지속 시간(ms)
+   * @param {number} slowMultiplier 	- 속도 배율 (기본 0.25)
    */
-  constructor(slowDurationMs = 5000,
+  constructor(slowDurationMs = 15000, // 🚨 수정: 15000ms (15초)
               reverseDurationMs = 5000,
-              slowMultiplier = 0.5) {
+              slowMultiplier = 0.25) { 
 
     // 각 디버프 지속 시간
     this.slow_duration_ms = slowDurationMs;
@@ -113,7 +113,7 @@ export function spawnDebuffNearStart(grid, w, h, rng, start = [0, 0]) {
   let candidates = neighbors;
   if (candidates.length === 0) {
     // 혹시 출발이 사방막힘이면 임의로 (0,1) 같은 유효칸 배치
-    if (h > 1)      candidates = [[0, 1]];
+    if (h > 1)        candidates = [[0, 1]];
     else if (w > 1) candidates = [[1, 0]];
     else            candidates = [[0, 0]];
   }
@@ -135,12 +135,13 @@ export function applyDebuffOnPickup(
   penaltyMs = 5000
 ) {
   /**
-   * - SLOW/REVERSE: 남은 지속시간이 있으면 연장되도록 처리
+   * - SLOW/REVERSE: 남은 지속시간이 있으면 연장되도록 처리 (현재 시간 또는 남은 시간 중 긴 쪽에서 추가)
    * - TIME_LEFT   : 남은 전체 시간에서 penaltyMs 차감하여 반환
    * 반환값: 갱신된 remainingTimeMs
    */
 
   if (item.dtype === DebuffType.SLOW) {
+    // 🚨 수정: slow_until_ms 갱신 시 state.slow_duration_ms (15000ms) 사용
     const base = Math.max(nowMs, state.slow_until_ms);
     state.slow_until_ms = base + state.slow_duration_ms;
     return remainingTimeMs;

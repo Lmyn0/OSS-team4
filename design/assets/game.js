@@ -1,352 +1,416 @@
 // assets/game.js
 
 import { Boss } from "./boss.js";
-import { drawMaze, drawDebuffItems, updateHUD } from "./renderer.js";
+// 🚨 수정: drawAttackItems 함수를 import에 추가
+import { drawMaze, drawDebuffItems, drawAttackItems, updateHUD } from "./renderer.js"; 
 import { generateMaze, N, S, E, W } from "./maze.js";
-import { Player } from "./player.js"; // player.js의 두 눈 구조 클래스를 import
+import { Player } from "./player.js"; 
 import {
-    DebuffType,
-    DebuffState,
-    DebuffItem,
-    spawnDebuffNearStart,
+    DebuffType,
+    DebuffState,
+    DebuffItem,
+    spawnDebuffNearStart,
 } from "./debuff.js";
 import { EASY, HARD, selectDifficultyFromKey } from "./difficulty.js";
 
 window.addEventListener("DOMContentLoaded", () => {
-    // ===== 1. DOM 요소 준비 =====
-    const canvas   = document.getElementById("gridCanvas");
-    const ctx      = canvas.getContext("2d");
-    const hudEl    = document.getElementById("hud");
-    const actorsEl = document.getElementById("actors");
-    const boardEl  = document.getElementById("board");
+    // ===== 1. DOM 요소 준비 (생략) =====
+    const canvas    = document.getElementById("gridCanvas");
+    const ctx       = canvas.getContext("2d");
+    const hudEl     = document.getElementById("hud");
+    const actorsEl  = document.getElementById("actors");
+    const boardEl   = document.getElementById("board");
 
-    if (!canvas || !ctx || !hudEl || !actorsEl || !boardEl) {
-        console.error("필수 DOM 요소(gridCanvas, hud, actors, board)를 찾지 못했습니다.");
-        return;
-    }
+    if (!canvas || !ctx || !hudEl || !actorsEl || !boardEl) {
+        console.error("필수 DOM 요소(gridCanvas, hud, actors, board)를 찾지 못했습니다.");
+        return;
+    }
 
-    // ===== 2. 난이도 / 보드 크기 설정 =====
-    const params = new URLSearchParams(window.location.search);
+    // ===== 2. 난이도 / 보드 크기 설정 (생략) =====
+    const params = new URLSearchParams(window.location.search);
+    const dKey =
+        params.get("d") ||
+        params.get("mode") ||
+        params.get("difficulty") ||
+        params.get("level");
 
-    const dKey =
-        params.get("d") ||
-        params.get("mode") ||
-        params.get("difficulty") ||
-        params.get("level");
+    const difficulty = selectDifficultyFromKey(dKey); 
+    const width                 = difficulty.width;
+    const height                = difficulty.height;
+    const TIME_LIMIT_SECONDS = difficulty.time_limit;
 
-    console.log("[DIFF] raw key =", dKey);
+    const boardRect = boardEl.getBoundingClientRect();
+    const maxCellW = Math.floor(boardRect.width     / width);
+    const maxCellH = Math.floor(boardRect.height / height);
+    const cellSize = Math.min(difficulty.cell, maxCellW, maxCellH);
 
-    const difficulty = selectDifficultyFromKey(dKey); // EASY or HARD 객체
+    const mazeWidth     = width     * cellSize;
+    const mazeHeight = height * cellSize;
 
-    console.log(
-        "[DIFF] selected difficulty:",
-        difficulty,
-        "is HARD?",
-        difficulty === HARD
-    );
+    canvas.width    = mazeWidth;
+    canvas.height = mazeHeight;
+    canvas.style.width  = mazeWidth     + "px";
+    canvas.style.height = mazeHeight + "px";
 
-    const width              = difficulty.width;
-    const height             = difficulty.height;
-    const TIME_LIMIT_SECONDS = difficulty.time_limit;
+    const offsetX = (boardRect.width    - mazeWidth)    / 2;
+    const offsetY = (boardRect.height - mazeHeight) / 2;
 
-    const boardRect = boardEl.getBoundingClientRect();
+    canvas.style.left   = offsetX + "px";
+    canvas.style.top    = offsetY + "px";
+    actorsEl.style.left = offsetX + "px";
+    actorsEl.style.top  = offsetY + "px";
 
-    const maxCellW = Math.floor(boardRect.width  / width);
-    const maxCellH = Math.floor(boardRect.height / height);
-    const cellSize = Math.min(difficulty.cell, maxCellW, maxCellH);
+    // ===== 3. 미로 생성 (생략) =====
+    const seed = (Date.now() & 0xffffffff) >>> 0;
+    const grid = generateMaze(width, height, seed);
 
-    const mazeWidth  = width  * cellSize;
-    const mazeHeight = height * cellSize;
+    // ===== 4. 플레이어 생성 (생략) =====
+    const baseSpeed = Math.max(1, Math.floor(cellSize / 8));
+    const player = new Player(0, 0, cellSize, "#FF00FF", baseSpeed);
+    actorsEl.appendChild(player.el);
 
-    canvas.width  = mazeWidth;
-    canvas.height = mazeHeight;
-    canvas.style.width  = mazeWidth  + "px";
-    canvas.style.height = mazeHeight + "px";
+    // 도착 지점
+    const goalX = width     - 1;
+    const goalY = height - 1;
 
-    const offsetX = (boardRect.width  - mazeWidth)  / 2;
-    const offsetY = (boardRect.height - mazeHeight) / 2;
+    // ===== 4.5. 보스 및 공격 아이템 초기화 =====
+    let boss = null;
+    let attackCharges = 0; // 🚨 공격 횟수 초기화
+    let attackItems = [];  // 🚨 공격 아이템 위치 목록
 
-    canvas.style.left   = offsetX + "px";
-    canvas.style.top    = offsetY + "px";
-    actorsEl.style.left = offsetX + "px";
-    actorsEl.style.top  = offsetY + "px";
+    if (difficulty === HARD) {
+        const bx = Math.floor(width / 2);
+        const by = Math.floor(height / 2);
+        boss = new Boss(bx, by, cellSize, 5);
+        console.log("💀 HARD MODE → Boss Spawned at", bx, by, "cellSize", cellSize);
+    } else {
+        console.log("🙂 NOT HARD → no boss");
+    }
 
-    // ===== 3. 미로 생성 =====
-    const seed = (Date.now() & 0xffffffff) >>> 0;
-    const grid = generateMaze(width, height, seed);
+    // ===== 5. 디버프 상태 / 아이템 상수 및 초기화 =====
+    const TIME_LEFT_PENALTY_MS = 30_000; // 시간 페널티 (기존값 유지)
+    const MAX_DEBUFF_ITEMS   = 25;
 
-    // ===== 4. 플레이어 생성 =====
-    const baseSpeed = Math.max(1, Math.floor(cellSize / 8));
+    // DebuffState 생성: debuff.js에 설정된 기본값 (SLOW 15초, 0.25배율)을 사용합니다.
+    const debuffState = new DebuffState(); 
+    let debuffItems = [];
 
-    const player = new Player(0, 0, cellSize, "#FF00FF", baseSpeed);
-    actorsEl.appendChild(player.el);
+    // 시작 지점 근처 디버프 아이템 생성 (생략)
+    const startItem = spawnDebuffNearStart(
+        grid,
+        width,
+        height,
+        Math.random,
+        [0, 0]
+    );
+    debuffItems.push(startItem);
 
-    // 도착 지점
-    const goalX = width  - 1;
-    const goalY = height - 1;
+    // 기타 랜덤 아이템 생성을 위한 Set
+    const occupied = new Set();
+    function posKey(x, y) {
+        return `${x},${y}`;
+    }
+    occupied.add(posKey(0, 0));
+    occupied.add(posKey(goalX, goalY));
+    occupied.add(posKey(startItem.gx, startItem.gy));
 
-    // ===== 4.5. 보스 생성 (HARD 모드에서만) =====
-    let boss = null;
+    // 디버프 아이템 랜덤 배치 (생략)
+    let remainingSlots = MAX_DEBUFF_ITEMS - debuffItems.length;
+    if (remainingSlots < 0) remainingSlots = 0;
 
-    if (difficulty === HARD) {
-        const bx = Math.floor(width / 2);
-        const by = Math.floor(height / 2);
-        boss = new Boss(bx, by, cellSize, 5);
-        // Boss 엘리먼트는 Boss 클래스 내부에서 생성되므로, 여기서 actorsEl에 추가하는 코드는 불필요함
-        // 만약 Boss가 DOM 요소를 사용한다면, 여기서 actorsEl.appendChild(boss.el)를 호출해야 함. 
-        // 현재는 Boss가 캔버스에 그려진다고 가정하고 DOM 추가는 생략함.
-        console.log("💀 HARD MODE → Boss Spawned at", bx, by, "cellSize", cellSize);
-    } else {
-        console.log("🙂 NOT HARD → no boss");
-    }
+    const totalCells        = width * height;
+    const percentBased  = Math.floor(totalCells * 0.05);
+    const targetDebuffCount = Math.min(remainingSlots, percentBased);
 
-    // ===== 5. 디버프 상태 / 아이템 상수 및 초기화 =====
-    const SLOW_DURATION_MS      = 30_000;
-    const REVERSE_DURATION_MS = 15_000;
-    const TIME_LEFT_MS          = 30_000;
-    const MAX_DEBUFF_ITEMS      = 25;
+    let addedDebuff = 0;
+    while (addedDebuff < targetDebuffCount) {
+        const rx = Math.floor(Math.random() * width);
+        const ry = Math.floor(Math.random() * height);
+        if (!occupied.has(posKey(rx, ry))) {
+            const types = [
+                DebuffType.SLOW,
+                DebuffType.TIME_LEFT,
+                DebuffType.REVERSE,
+            ];
+            const dtype = types[Math.floor(Math.random() * types.length)];
+            debuffItems.push(new DebuffItem(rx, ry, dtype));
+            occupied.add(posKey(rx, ry));
+            addedDebuff++;
+        }
+    }
 
-    const debuffState = new DebuffState(
-        SLOW_DURATION_MS,
-        REVERSE_DURATION_MS,
-        0.5
-    );
-    let debuffItems = [];
+    // 🚨 3. 공격 아이템 스폰 로직 추가 (HARD 모드에서만, 랜덤 위치)
+    if (difficulty === HARD) {
+        const ATTACK_ITEM_COUNT = 5; 
+        
+        let addedAttack = 0;
+        while (addedAttack < ATTACK_ITEM_COUNT) {
+            const rx = Math.floor(Math.random() * width);
+            const ry = Math.floor(Math.random() * height);
+            if (!occupied.has(posKey(rx, ry))) {
+                attackItems.push({ gx: rx, gy: ry }); // 공격 아이템 위치 저장
+                occupied.add(posKey(rx, ry));
+                addedAttack++;
+            }
+        }
+    }
 
-    // 시작 지점 근처 아이템 생성
-    const startItem = spawnDebuffNearStart(
-        grid,
-        width,
-        height,
-        Math.random,
-        [0, 0]
-    );
-    debuffItems.push(startItem);
+    console.log(`디버프 아이템 총 ${debuffItems.length}개 배치됨.`);
+    if (difficulty === HARD) {
+        console.log(`공격 아이템 총 ${attackItems.length}개 배치됨.`);
+    }
 
-    // 기타 랜덤 아이템 생성
-    const occupied = new Set();
-    function posKey(x, y) {
-        return `${x},${y}`;
-    }
-    occupied.add(posKey(0, 0));
-    occupied.add(posKey(goalX, goalY));
-    occupied.add(posKey(startItem.gx, startItem.gy));
 
-    let remainingSlots = MAX_DEBUFF_ITEMS - debuffItems.length;
-    if (remainingSlots < 0) remainingSlots = 0;
+    // ===== 6. 시간 관련 변수 및 PAUSE 기능 추가 =====
+    const totalLimitMs  = TIME_LIMIT_SECONDS * 1000;
+    let startTimeMs         = performance.now();
+    let remainingTimeMs = totalLimitMs;
+    
+    let isPaused = false; 
+    let animationFrameId = null;
+    let nowMs = 0;
 
-    const totalCells      = width * height;
-    const percentBased    = Math.floor(totalCells * 0.05);
-    const targetItemCount = Math.min(remainingSlots, percentBased);
+    const gameInstance = {
+        pause: () => {
+            isPaused = true;
+            console.log("Game state set to PAUSED.");
+        },
+        resume: () => {
+            if (isPaused) {
+                const pauseDurationMs = performance.now() - nowMs;
+                startTimeMs += pauseDurationMs;
+                isPaused = false;
+                console.log("Game state set to RUNNING.");
+                requestAnimationFrame(loop); 
+            }
+        },
+    };
+    
+    window.gameInstance = gameInstance;
 
-    let added = 0;
-    while (added < targetItemCount) {
-        const rx = Math.floor(Math.random() * width);
-        const ry = Math.floor(Math.random() * height);
-        if (!occupied.has(posKey(rx, ry))) {
-            const types = [
-                DebuffType.SLOW,
-                DebuffType.TIME_LEFT,
-                DebuffType.REVERSE,
-            ];
-            const dtype = types[Math.floor(Math.random() * types.length)];
-            debuffItems.push(new DebuffItem(rx, ry, dtype));
-            occupied.add(posKey(rx, ry));
-            added++;
-        }
-    }
 
-    console.log(`디버프 아이템 총 ${debuffItems.length}개 배치됨.`);
+    // ===== 7. 키보드 입력 처리 =====
+    const keysDown = new Set();
 
-    // ===== 6. 시간 관련 변수 =====
-    const totalLimitMs  = TIME_LIMIT_SECONDS * 1000;
-    let startTimeMs     = performance.now();
-    let remainingTimeMs = totalLimitMs;
+    window.addEventListener("keydown", (e) => {
+        if (isPaused && e.key !== 'Escape') return; 
+        
+        keysDown.add(e.key);
 
-    // ===== 7. 키보드 입력 처리 =====
-    const keysDown = new Set();
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+            e.preventDefault();
+        }
 
-    window.addEventListener("keydown", (e) => {
-        keysDown.add(e.key);
+        // 🚨 5. SPACE 공격 로직 수정 (HARD 모드, 공격 횟수, 인접 여부 확인)
+        if (e.key === " " && !isPaused) { 
+            if (difficulty === HARD && boss && boss.isAlive && attackCharges > 0) {
+                const px = player.grid_x;
+                const py = player.grid_y;
+                const bx = boss.grid_x; 
+                const by = boss.grid_y;
+                
+                const dx = Math.abs(px - bx);
+                const dy = Math.abs(py - by);
 
-        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
-            e.preventDefault();
-        }
+                // 인접 셀 (상하좌우) 또는 동일 셀에 있을 때 공격 가능 (파이썬 로직 반영)
+                if ((dx === 0 && dy === 0) || dx + dy === 1) { 
+                    boss.takeDamage(1);
+                    attackCharges -= 1; // 공격 횟수 차감
+                    console.log(`Boss HP: ${boss.hp}/${boss.maxHP}, Charges Left: ${attackCharges}`);
+                }
+            }
+        }
+    });
 
-        // 보스 공격 처리 (스페이스바)
-        if (e.key === " ") {
-            if (boss && boss.isAlive) {
-                const dx = Math.abs(player.grid_x - boss.grid_x);
-                const dy = Math.abs(player.grid_y - boss.grid_y);
+    window.addEventListener("keyup", (e) => {
+        keysDown.delete(e.key);
+    });
 
-                // 인접한 셀에 있을 때만 공격 가능
-                if (dx + dy <= 1) {
-                    boss.takeDamage(1);
-                    console.log(`Boss HP: ${boss.hp}/${boss.maxHP}`);
-                }
-            }
-        }
-    });
+    const DIRS = {
+        up:     { dx: 0,    dy: -1, bit: N },
+        down:   { dx: 0,    dy:     1, bit: S },
+        left:   { dx: -1, dy:   0, bit: W },
+        right: { dx: 1,     dy:     0, bit: E },
+    };
 
-    window.addEventListener("keyup", (e) => {
-        keysDown.delete(e.key);
-    });
+    function handleMovement(nowMs) {
+        if (player.moving_direction !== null) return;
 
-    const DIRS = {
-        up:    { dx: 0,  dy: -1, bit: N },
-        down:  { dx: 0,  dy:  1, bit: S },
-        left:  { dx: -1, dy:  0, bit: W },
-        right: { dx: 1,  dy:  0, bit: E },
-    };
+        const reverse = debuffState.is_reverse(nowMs);
+        
+        let keyUp       = "ArrowUp";
+        let keyDownK = "ArrowDown";
+        let keyLeft     = "ArrowLeft";
+        let keyRight = "ArrowRight";
 
-    function handleMovement(nowMs) {
-        if (player.moving_direction !== null) return;
+        if (reverse) {
+            keyUp       = "ArrowDown";
+            keyDownK = "ArrowUp";
+            keyLeft     = "ArrowRight";
+            keyRight = "ArrowLeft";
+        }
 
-        const reverse = debuffState.is_reverse(nowMs);
+        let dir = null;
 
-        let keyUp      = "ArrowUp";
-        let keyDownK = "ArrowDown";
-        let keyLeft    = "ArrowLeft";
-        let keyRight = "ArrowRight";
+        if (keysDown.has(keyUp)) {
+            dir = DIRS.up;
+        } else if (keysDown.has(keyDownK)) {
+            dir = DIRS.down;
+        } else if (keysDown.has(keyLeft)) {
+            dir = DIRS.left;
+        } else if (keysDown.has(keyRight)) {
+            dir = DIRS.right;
+        }
 
-        // 방향 반전 디버프 적용
-        if (reverse) {
-            keyUp      = "ArrowDown";
-            keyDownK = "ArrowUp";
-            keyLeft    = "ArrowRight";
-            keyRight = "ArrowLeft";
-        }
+        if (dir) {
+            player.start_move(grid, dir, cellSize);
+        }
+    }
 
-        let dir = null;
+    // ===== 8. 게임 루프 =====
+    let gameOver        = false;
+    let gameOverMessage = "";
 
-        if (keysDown.has(keyUp)) {
-            dir = DIRS.up;
-        } else if (keysDown.has(keyDownK)) {
-            dir = DIRS.down;
-        } else if (keysDown.has(keyLeft)) {
-            dir = DIRS.left;
-        } else if (keysDown.has(keyRight)) {
-            dir = DIRS.right;
-        }
+    function loop(timestamp) {
+        nowMs = timestamp;
+        
+        if (isPaused) {
+            // 일시 정지 중에는 그리기만 업데이트
+            drawMaze(ctx, grid, cellSize, goalX, goalY);
+            if (difficulty === HARD) drawAttackItems(ctx, attackItems, cellSize); // 🚨 공격 아이템 그리기
+            drawDebuffItems(ctx, debuffItems, cellSize);
+            if (boss && boss.isAlive && typeof boss.draw === "function") boss.draw(ctx);
+            player.draw(cellSize);
+            updateHUD(hudEl, debuffState, nowMs, remainingTimeMs, attackCharges); // 🚨 attackCharges 전달
+            return; 
+        }
+        
+        // 로직 업데이트
+        if (!gameOver) {
+            const elapsedMs = nowMs - startTimeMs;
+            remainingTimeMs = Math.max(0, totalLimitMs - elapsedMs);
 
-        if (dir) {
-            player.start_move(grid, dir, cellSize);
-        }
-    }
+            // 시간 초과 체크
+            if (remainingTimeMs <= 0) {
+                gameOver        = true;
+                const diffParam = dKey || "easy";
+                window.location.href = "lose.html?d=" + encodeURIComponent(diffParam);
+                return; 
+            }
 
-    // ===== 8. 게임 루프 =====
-    let gameOver      = false;
-    let gameOverMessage = "";
+            // 속도 디버프 적용 (SLOW 15초 반영)
+            if (debuffState.is_slow(nowMs)) {
+                player.speed = Math.max(1, Math.floor(baseSpeed * debuffState.slow_multiplier));
+            } else {
+                player.speed = baseSpeed;
+            }
 
-    function loop() {
-        const nowMs = performance.now();
-        let shouldStopLoop = false; // 루프 중단 여부 플래그
+            handleMovement(nowMs);
 
-        if (!gameOver) {
-            const elapsedMs = nowMs - startTimeMs;
-            remainingTimeMs = Math.max(0, totalLimitMs - elapsedMs);
+            // 4. 공격 아이템 획득 로직 추가 (HARD 모드에서만)
+            if (difficulty === HARD && attackItems.length > 0) {
+                const nextAttackItems = [];
 
-            // 1차 시간 초과 체크 및 게임 오버 처리
-            if (remainingTimeMs <= 0) {
-                gameOver      = true;
-                gameOverMessage = "시간 초과!";
-                shouldStopLoop = true; 
-                // 즉시 lose.html로 리디렉션
-                const diffParam = dKey || "easy";
-                window.location.href = "lose.html?d=" + encodeURIComponent(diffParam);
-            }
+                for (const it of attackItems) {
+                    const picked =
+                        player.grid_x === it.gx && player.grid_y === it.gy;
 
-            // 속도 디버프 적용
-            if (debuffState.is_slow(nowMs)) {
-                player.speed = Math.max(
-                    1,
-                    Math.floor(baseSpeed * debuffState.slow_multiplier)
-                );
-            } else {
-                player.speed = baseSpeed;
-            }
+                    if (picked) {
+                        attackCharges += 1; // 🚨 공격 횟수 증가
+                    } else {
+                        nextAttackItems.push(it);
+                    }
+                }
+                attackItems = nextAttackItems;
+            }
 
-            handleMovement(nowMs);
+            // 디버프 아이템 획득 처리 (기존 로직 유지)
+            if (debuffItems.length > 0) {
+                const nextItems = [];
+                for (const it of debuffItems) {
+                    const picked = player.grid_x === it.gx && player.grid_y === it.gy;
+                    if (!picked) {
+                        nextItems.push(it);
+                        continue;
+                    }
+                    
+                    // 아이템 효과 적용 (SLOW 15초 반영)
+                    if (it.dtype === DebuffType.SLOW) {
+                        debuffState.slow_until_ms = Math.max(nowMs, debuffState.slow_until_ms) + debuffState.slow_duration_ms; 
+                    } else if (it.dtype === DebuffType.REVERSE) {
+                        debuffState.reverse_until_ms = Math.max(nowMs, debuffState.reverse_until_ms) + debuffState.reverse_duration_ms; 
+                    } else if (it.dtype === DebuffType.TIME_LEFT) {
+                        const newRemaining = Math.max(0, remainingTimeMs - TIME_LEFT_PENALTY_MS);
+                        const elapsedAfter = totalLimitMs - newRemaining;
+                        startTimeMs             = nowMs - elapsedAfter;
+                        remainingTimeMs         = newRemaining;
+                    }
+                }
+                debuffItems = nextItems;
+            }
 
-            // 아이템 획득 처리
-            if (debuffItems.length > 0) {
-                const nextItems = [];
+            // 보스 업데이트 (생략)
+            if (boss && boss.isAlive && typeof boss.update === "function") {
+                try {
+                    boss.update();
+                } catch (e) {
+                    console.error("Boss update error:", e);
+                }
+            }
 
-                for (const it of debuffItems) {
-                    const picked =
-                        player.grid_x === it.gx && player.grid_y === it.gy;
+            // 플레이어 업데이트
+            player.update();
 
-                    if (!picked) {
-                        nextItems.push(it);
-                        continue;
-                    }
+            // 🚨 승리 조건 체크 (수정된 로직)
+            if (player.grid_x === goalX && player.grid_y === goalY) {
+                
+                // Hard 모드이고 보스가 살아있다면 승리 불가능
+                const bossMustBeDefeated = (difficulty === HARD && boss && boss.isAlive);
+                
+                if (bossMustBeDefeated) {
+                    // 보스가 살아있다면 통과하지 못하고 메시지만 출력
+                    console.log("Boss is alive! Must defeat the boss first.");
+                } else {
+                    // Easy/Normal 모드이거나, Hard 모드에서 보스가 사망했을 경우 승리
+                    gameOver = true;
+                    console.log("🎉 YOU WIN!");
+                    setTimeout(() => {
+                        window.location.href = `win.html?d=${encodeURIComponent(dKey || 'easy')}`;
+                    }, 300); 
+                    return; // 게임 루프 종료
+                }
+            }
+        }
 
-                    // 아이템 효과 적용
-                    if (it.dtype === DebuffType.SLOW) {
-                        debuffState.slow_until_ms = Math.max(
-                            nowMs,
-                            debuffState.slow_until_ms
-                        ) + SLOW_DURATION_MS;
-                    } else if (it.dtype === DebuffType.REVERSE) {
-                        debuffState.reverse_until_ms = Math.max(
-                            nowMs,
-                            debuffState.reverse_until_ms
-                        ) + REVERSE_DURATION_MS;
-                    } else if (it.dtype === DebuffType.TIME_LEFT) {
-                        const newRemaining = Math.max(0, remainingTimeMs - TIME_LEFT_MS);
-                        const elapsedAfter = totalLimitMs - newRemaining;
-                        startTimeMs        = nowMs - elapsedAfter;
-                        remainingTimeMs    = newRemaining;
-                    }
-                }
+        // 그리기
+        drawMaze(ctx, grid, cellSize, goalX, goalY);
+        
+        // 🚨 6. 공격 아이템 그리기 호출 (HARD 모드에서만)
+        if (difficulty === HARD) {
+            // drawAttackItems 함수가 assets/renderer.js에 구현되어 있어야 함
+            if (typeof drawAttackItems === 'function') {
+                drawAttackItems(ctx, attackItems, cellSize);
+            }
+        }
 
-                debuffItems = nextItems;
-            }
+        drawDebuffItems(ctx, debuffItems, cellSize);
 
-            // 보스 업데이트 (예외 처리 포함)
-            if (boss && boss.isAlive && typeof boss.update === "function") {
-                try {
-                    boss.update();
-                } catch (e) {
-                    console.error("Boss update error:", e);
-                }
-            }
+        if (boss && boss.isAlive && typeof boss.draw === "function") {
+            try {
+                boss.draw(ctx);
+            } catch (e) {
+                console.error("Boss draw error:", e);
+            }
+        }
 
-            // 플레이어 업데이트
-            player.update();
+        player.draw(cellSize);
+        
+        // 🚨 7. updateHUD 호출 시 attackCharges 전달 (renderer.js의 함수 시그니처 수정 필요)
+        updateHUD(hudEl, debuffState, nowMs, remainingTimeMs, attackCharges);
 
-            // 승리 조건 체크
-            if (player.grid_x === goalX && player.grid_y === goalY) {
-                gameOver = true;
-                shouldStopLoop = true;
-                console.log("🎉 YOU WIN!");
-                // 팝업이나 리디렉션 처리
-                setTimeout(() => {
-                    window.location.href = "/win";
-                }, 300); 
-            }
-        }
+        // 다음 프레임 요청
+        animationFrameId = requestAnimationFrame(loop);
+    }
 
-        // 그리기 (게임 오버 여부와 관계없이 마지막 상태를 그림)
-        drawMaze(ctx, grid, cellSize, goalX, goalY);
-        drawDebuffItems(ctx, debuffItems, cellSize);
-
-        if (boss && boss.isAlive && typeof boss.draw === "function") {
-            try {
-                boss.draw(ctx);
-            } catch (e) {
-                console.error("Boss draw error:", e);
-            }
-        }
-
-        player.draw(cellSize);
-        updateHUD(hudEl, debuffState, nowMs, remainingTimeMs);
-
-        // 🚨 다음 프레임 요청: 게임 오버 상태가 아닐 때만 요청하며, 시간 초과 시 리디렉션 되었으므로 여기는 실행되지 않음
-        if (!gameOver && !shouldStopLoop) {
-            requestAnimationFrame(loop);
-        }
-    }
-
-    loop();
+    animationFrameId = requestAnimationFrame(loop);
 });
