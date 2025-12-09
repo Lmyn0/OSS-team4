@@ -30,6 +30,7 @@ def main():
     
     font = pygame.font.SysFont("arial", 22)
     title_font = pygame.font.SysFont("arial", 35, bold=True)
+    warning_font = pygame.font.SysFont("arial", 40, bold=True)
     hud_font = pygame.font.Font(None, 24)
     
     clock = pygame.time.Clock()
@@ -84,14 +85,15 @@ def main():
             occupied_positions.add((boss.x, boss.y))
 
         attack_items = []
-        for _ in range(ATTACK_ITEM_COUNT):
-            while True:
-                ax = rng.randint(0, width - 1)
-                ay = rng.randint(0, height - 1)
-                if (ax, ay) not in occupied_positions:
-                    attack_items.append((ax, ay))
-                    occupied_positions.add((ax, ay))
-                    break
+        if getattr(difficulty, 'name', '') in ["Hard", "어려움"]:
+            for _ in range(ATTACK_ITEM_COUNT):
+                while True:
+                    ax = rng.randint(0, width - 1)
+                    ay = rng.randint(0, height - 1)
+                    if (ax, ay) not in occupied_positions:
+                        attack_items.append((ax, ay))
+                        occupied_positions.add((ax, ay))
+                        break
 
         remaining_slots = MAX_DEBUFF_ITEMS - len(debuff_items)
         if remaining_slots < 0:
@@ -116,6 +118,9 @@ def main():
         is_paused = False
         pause_start_time = 0
         show_manual = False
+        
+        boss_warning_msg = ""
+        boss_warning_until_ms = 0
 
         while running:
             dt = clock.tick(60)
@@ -255,9 +260,16 @@ def main():
                 player.update()
                 
                 if player.grid_x == goal_x and player.grid_y == goal_y:
+                    is_hard = getattr(difficulty, 'name', '') in ["Hard", "어려움"]
+
+                if is_hard:
+                    if boss is not None and boss.is_alive:
+                        boss_warning_msg = "clear boss first!"
+                        boss_warning_until_ms = now_ms + 2000
+                    else:
+                        game_over_message = "STAGE CLEAR!"
+                else:
                     game_over_message = "STAGE CLEAR!"
-
-
             # ───────── 3. 화면 그리기 ─────────
             game_surface.fill((255, 255, 255))
             draw_maze(game_surface, grid, cell_size, goal_x, goal_y)
@@ -273,6 +285,19 @@ def main():
             player.draw(game_surface, cell_size)
             draw_debuff_hud(game_surface, debuff_state, now_ms, remaining_time_ms, hud_font, attack_charges)
 
+            if boss_warning_msg and now_ms < boss_warning_until_ms:
+                if boss_warning_msg and now_ms < boss_warning_until_ms:
+                    warn_surf = warning_font.render(boss_warning_msg, True, (0, 0, 0))
+    
+                    warn_rect = warn_surf.get_rect(center=(game_width // 2, game_height // 2))
+
+                    bg_surf = pygame.Surface((warn_rect.width + 40, warn_rect.height + 20))
+                    bg_surf.set_alpha(150)  # 배경 투명도
+                    bg_surf.fill((255, 255, 255))  # 하얀 배경
+                    bg_rect = bg_surf.get_rect(center=(game_width // 2, game_height // 2))
+    
+                    game_surface.blit(bg_surf, bg_rect)
+                    game_surface.blit(warn_surf, warn_rect)
             # 우상단 일시정지 버튼
             if not is_menu_mode and not show_manual:
                 menu.draw_button(game_surface, pause_btn_rect, "MENU", font, mouse_pos)
