@@ -96,7 +96,7 @@ OSS-TEAM4/
 
 ## 🛠 Tech Stack
 
-| 기술 | 아이콘 | 설명 |
+| 기술 | | 설명 |
 |------|--------|--------|
 | Python | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" width="40"/> | 서버 실행(app.py), 게임 구동 환경 제공 |
 | HTML | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" width="40"/> | 게임 화면 구성 및 UI 구조 설계 |
