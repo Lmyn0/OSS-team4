@@ -1,4 +1,4 @@
-// assets/game.js
+// assets/game.js (최종 버전: Hard 모드 Slow 배율 0.5 적용 및 최소 속도 제한 1 보장)
 
 import { Boss } from "./boss.js";
 // 🚨 수정: drawAttackItems 함수를 import에 추가
@@ -91,8 +91,18 @@ window.addEventListener("DOMContentLoaded", () => {
     const TIME_LEFT_PENALTY_MS = 30_000; // 시간 페널티 (기존값 유지)
     const MAX_DEBUFF_ITEMS   = 25;
 
-    // DebuffState 생성: debuff.js에 설정된 기본값 (SLOW 15초, 0.25배율)을 사용합니다.
-    const debuffState = new DebuffState(); 
+    // 🚨 [수정된 로직] 난이도에 따라 Slow 배율 설정
+    let slowMultiplier = 0.1; // EASY/NORMAL 기본 배율 (debuff.js의 기본값)
+    const reverseDurationMs = 15000; // debuff.js에서 설정된 15초
+    const slowDurationMs = 15000; // debuff.js에서 설정된 15초
+
+    if (difficulty === HARD) {
+        // 🚨 최종 수정: HARD 모드 SLOW 배율을 0.5로 설정
+        slowMultiplier = 0.5; 
+    }
+
+    // DebuffState 생성: 설정한 Slow 배율을 전달하여 초기화
+    const debuffState = new DebuffState(slowDurationMs, reverseDurationMs, slowMultiplier); 
     let debuffItems = [];
 
     // 시작 지점 근처 디버프 아이템 생성 (생략)
@@ -300,7 +310,11 @@ window.addEventListener("DOMContentLoaded", () => {
 
             // 속도 디버프 적용 (SLOW 15초 반영)
             if (debuffState.is_slow(nowMs)) {
-                player.speed = Math.max(1, Math.floor(baseSpeed * debuffState.slow_multiplier));
+                // 🚨 최종 수정: Math.max(1, ...)를 다시 추가하여 최소 속도를 1로 보장합니다.
+                player.speed = Math.max(
+                    1,
+                    Math.floor(baseSpeed * debuffState.slow_multiplier)
+                );
             } else {
                 player.speed = baseSpeed;
             }
