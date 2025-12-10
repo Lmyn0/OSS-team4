@@ -1,110 +1,153 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <title>YOU WIN !</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <title>YOU WIN !</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <link rel="stylesheet" href="https://cdn.quiple.dev/galmuri.css">
-  <link rel="stylesheet" href="assets/frame.css">
+    <link rel="stylesheet" href="https://cdn.quiple.dev/galmuri.css">
+    <link rel="stylesheet" href="assets/frame.css">
 
-  <style>
-    /* ====== WIN 전용 내부 레이아웃 ====== */
+    <style>
+        /* ====== WIN 전용 내부 레이아웃 ====== */
 
-    .lose-inner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      background: #66BDEC; /* 배경색은 그대로 유지 */
-    }
+        .lose-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #66BDEC; /* 배경색은 그대로 유지 */
+        }
 
-    .lose-sky {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      /* 땅 영역(153px)만큼 제외하고 하늘 영역을 설정 */
-      bottom: 153px; 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+        .lose-sky {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            /* 땅 영역(153px)만큼 제외하고 하늘 영역을 설정 */
+            bottom: 153px; 
+            display: flex;
+            flex-direction: column; /* 텍스트와 안내 문구를 수직으로 정렬 */
+            align-items: center;
+            justify-content: center;
+        }
 
-    .lose-text {
-      font-size: 112px;
-      line-height: 128px;
-      color: #E8EB2E;
-      white-space: nowrap;
-      text-align: center;
+        .lose-text {
+            font-size: 112px;
+            line-height: 128px;
+            color: #E8EB2E; /* 밝은 노란색 */
+            white-space: nowrap;
+            text-align: center;
 
-      -webkit-text-stroke: 3px #000000;
-      text-shadow: 4px 4px 0 #000000;
-      filter: blur(0.6px);
-      image-rendering: pixelated;
-    }
-    
-    /* 갈색 땅 영역 (다시 추가) */
-    .ground-wrap {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 153px;
-      background:
-        radial-gradient(#4a3a32 1px, transparent 1px) 0 0/6px 6px,
-        radial-gradient(#4a3a32 1px, transparent 1px) 3px 3px/6px 6px,
-        #654C40;
-    }
+            /* 픽셀 아트 스타일 강화: */
+            -webkit-text-stroke: 4px #000000; /* 테두리 두께 4px로 강화 */
+            text-shadow: 
+                8px 8px 0 #000000, /* 픽셀 그림자 (더 진하게) */
+                10px 10px 0 #544400; /* 추가적인 톤 그림자 (옵션) */
+            
+            filter: none; /* 🚨 수정: blur 효과 제거 */
+            image-rendering: pixelated;
+            margin-bottom: 20px; /* 안내 문구와 간격 추가 */
+        }
+        
+        /* 🚨 새롭게 수정된 ESC 안내 문구 스타일 (lose.html과 동일하게 적용) */
+        .esc-guide {
+            position: absolute; 
+            width: 554px; 
+            height: 129px;
+            
+            /* 위치 조정: 더 아래로 (60% -> 70%) */
+            top: 70%; 
+            
+            /* 절대 위치의 중앙 정렬 */
+            left: 50%;
+            transform: translateX(-50%); 
+            
+            font-family: 'Galmuri7', sans-serif;
+            font-style: normal;
+            font-weight: 400;
+            font-size: 24px;
+            line-height: 27px;
+            
+            /* 텍스트 색상 및 테두리/그림자 */
+            color: #FFFFFF;
+            text-align: center;
+            -webkit-text-stroke: 1px #000000; /* 글씨에 테두리 적용 */
+            text-shadow: 1px 1px 0 #000000; 
+            
+            filter: none; /* 🚨 수정: blur 효과 제거 */
+            padding: 0; 
+        }
 
-    /* 땅 위의 검은 선 (다시 추가) */
-    .ground-line {
-      position: absolute;
-      top: -7px;
-      left: 0;
-      right: 0;
-      height: 7px;
-      background: #000000;
-    }
+        /* 갈색 땅 영역 (다시 추가) */
+        .ground-wrap {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 153px;
+            background:
+                radial-gradient(#4a3a32 1px, transparent 1px) 0 0/6px 6px,
+                radial-gradient(#4a3a32 1px, transparent 1px) 3px 3px/6px 6px,
+                #654C40;
+        }
 
-    /* "Try again" 버튼 관련 스타일은 불필요하므로 주석 처리 또는 제거 */
-    /*
-    .cta-text {
-      ...
-    }
-    */
-  </style>
+        /* 땅 위의 검은 선 (다시 추가) */
+        .ground-line {
+            position: absolute;
+            top: -7px;
+            left: 0;
+            right: 0;
+            height: 7px;
+            background: #000000;
+        }
+
+        /*
+        .cta-text {
+            ...
+        }
+        */
+    </style>
 </head>
 <body>
 
-  <div class="component5">
-    <div class="rect3"></div>
-    <div class="rect4"></div>
+    <div class="component5">
+        <div class="rect3"></div>
+        <div class="rect4"></div>
 
-    <div class="rect7"></div>
-    <div class="rect6"></div>
-    <div class="rounded-rect"></div>
-    <div class="icon-eu">ㅡ</div>
-    <div class="icon-mi">ㅁ</div>
-    <div class="icon-x">x</div>
-    <div class="rect8" aria-hidden="true"></div>
+        <div class="rect7"></div>
+        <div class="rect6"></div>
+        <div class="rounded-rect"></div>
+        <div class="icon-eu">ㅡ</div>
+        <div class="icon-mi">ㅁ</div>
+        <div class="icon-x">x</div>
+        <div class="rect8" aria-hidden="true"></div>
 
-    <div class="content-slot">
-      <div class="lose-inner">
-        <div class="lose-sky">
-          <div class="lose-text">YOU WIN !</div>
+        <div class="content-slot">
+            <div class="lose-inner">
+                <div class="lose-sky">
+                    
+                    <div class="lose-text">YOU WIN !</div>
+                    
+                    <div class="esc-guide" style="left: 50%;">
+                        If you want to return to the menu window, → press the esc key
+                    </div>
+                    
+                </div>
+
+                <div class="ground-wrap">
+                    <div class="ground-line"></div>
+                </div>
+                
+            </div>
         </div>
-
-        <div class="ground-wrap">
-          <div class="ground-line"></div>
-          </div>
-        
-      </div>
     </div>
-  </div>
 
-  <script>
-    // 승리 화면이므로 아무 동작도 하지 않습니다.
-  </script>
+    <script>
+        // win.html이므로 재시작 버튼 로직은 필요 없습니다.
+        // 기존의 빈 스크립트를 유지합니다.
+    </script>
+
+    <script src="result_handler.js"></script> 
 
 </body>
 </html>
