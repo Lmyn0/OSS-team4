@@ -247,22 +247,40 @@
              pauseOverlay.style.display = 'none';
         }
 
-        function togglePause() {
-            const isPaused = pauseOverlay.style.display === 'flex';
-            
-            if (!isPaused) {
-                // 일시 정지 상태로 진입
-                pauseOverlay.style.display = 'flex';
-                // 💡 여기에 게임 루프 정지 로직 (예: gameInstance.pause()) 추가
-                document.body.classList.add('paused');
-            } else {
-                // 게임 재개 상태로 진입
-                pauseOverlay.style.display = 'none';
-                // 💡 여기에 게임 루프 재개 로직 (예: gameInstance.resume()) 추가
-                document.body.classList.remove('paused');
-            }
-        }
+         function togglePause() {
+          if (!pauseOverlay) return;
 
+          const isPausedUI = pauseOverlay.style.display === 'flex';
+          
+          if (!isPausedUI) {
+              // 🔹 UI: 메뉴 열기
+              pauseOverlay.style.display = 'flex';
+              document.body.classList.add('paused');
+              console.log("Pause menu OPEN");
+
+              // 🔹 게임 로직: 일시정지
+              if (window.gameInstance && typeof window.gameInstance.pause === 'function') {
+                  window.gameInstance.pause();
+                  console.log("Game state set to PAUSED.");
+              } else {
+                  console.warn("window.gameInstance.pause()를 찾지 못했습니다.");
+              }
+
+          } else {
+              // 🔹 UI: 메뉴 닫기
+              pauseOverlay.style.display = 'none';
+              document.body.classList.remove('paused');
+              console.log("Pause menu CLOSE");
+
+              // 🔹 게임 로직: 재개
+              if (window.gameInstance && typeof window.gameInstance.resume === 'function') {
+                  window.gameInstance.resume();
+                  console.log("Game state set to RUNNING.");
+              } else {
+                  console.warn("window.gameInstance.resume()를 찾지 못했습니다.");
+              }
+          }
+      }
         // 1. ESC 키 이벤트 리스너
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -281,7 +299,12 @@
 
         // 4. MANUAL 버튼: manual.html로 이동
         document.getElementById('manualBtn').addEventListener('click', () => {
-            window.location.href = 'manual.html'; 
+        // 게임 창은 그대로 두고, 매뉴얼을 새 창으로 띄움
+        window.open(
+          'manual.html?from=game',   // 쿼리로 "게임에서 왔다" 표시
+          'manualWindow',
+          'width=720,height=620'
+        );
         });
 
         // 5. 🚨 QUIT 버튼: 게임 상태를 그대로 멈춘 채 현재 화면 유지 (수정된 부분)

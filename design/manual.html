@@ -166,26 +166,37 @@
     </section>
   </main>
 
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const closeBtn = document.getElementById('manualCloseBtn');
-    if (!closeBtn) return;
+  
 
-    closeBtn.addEventListener('click', (e) => {
-      e.preventDefault(); // 기본 이동 막기 (href="#" 무시)
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const closeBtn = document.getElementById('manualCloseBtn');
+  if (!closeBtn) return;
 
-      const ref = document.referrer || '';
+  const params = new URLSearchParams(window.location.search);
+  const from = params.get('from');   // 'game' 또는 null
 
-      // 1) 게임 화면(background.html)에서 온 경우 → 게임으로 되돌아가기
-      if (ref.includes('background.html')) {
-        window.location.href = ref;  // d=hard 같은 난이도 파라미터도 유지됨
-        return;
-      }
+  closeBtn.addEventListener('click', (e) => {
+    e.preventDefault(); // 기본 링크 동작 막기
 
-      // 2) 그 외(처음 시작 화면 등) → 난이도 선택창으로 이동
-      window.location.href = 'level.html';  // 난이도 선택 페이지 파일명
-    });
+    // ✅ ESC로 들어온 경우: 새 창이니까 그냥 창만 닫기
+    if (from === 'game') {
+      window.close();
+      return;
+    }
+
+    // ✅ 처음 시작 흐름: start → manual → close → level.html
+    const ref = document.referrer || '';
+
+    if (ref.includes('background.html')) {
+      // 만약 혹시라도 game에서 같은 탭으로 온 경우가 있다면(안 쓰겠지만)
+      window.location.href = ref;
+    } else {
+      window.location.href = 'level.html';  // 난이도 선택창
+    }
   });
+});
 </script>
+
 </body>
 </html>

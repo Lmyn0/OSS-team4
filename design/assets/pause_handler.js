@@ -23,20 +23,38 @@ document.addEventListener("DOMContentLoaded", () => {
      * (게임 정지/재개 로직은 background.html의 게임 모듈이 제공해야 함)
      */
     function togglePause() {
-        const isPaused = pauseOverlay.style.display === 'flex';
-        
-        if (!isPaused) {
-            pauseOverlay.style.display = 'flex'; // 메뉴 표시
-            document.body.classList.add('paused');
-            // 💡 게임 일시 정지 로직 (예: gameInstance.pause())을 여기에 추가합니다.
-            console.log("Game Paused");
+    const isUIOpened = pauseOverlay.style.display === 'flex';
+
+    if (!isUIOpened) {
+        // 🔹 1) UI: 메뉴 열기
+        pauseOverlay.style.display = 'flex';
+        document.body.classList.add('paused');
+        console.log("Pause menu OPEN");
+
+        // 🔹 2) 게임 로직: 일시정지
+        if (window.gameInstance && typeof window.gameInstance.pause === 'function') {
+            window.gameInstance.pause();
+            console.log("Game state set to PAUSED.");
         } else {
-            pauseOverlay.style.display = 'none'; // 메뉴 숨김
-            document.body.classList.remove('paused');
-            // 💡 게임 재개 로직 (예: gameInstance.resume())을 여기에 추가합니다.
-            console.log("Game Resumed");
+            console.warn("window.gameInstance.pause()를 찾지 못했습니다.");
+        }
+
+    } else {
+        // 🔹 1) UI: 메뉴 닫기
+        pauseOverlay.style.display = 'none';
+        document.body.classList.remove('paused');
+        console.log("Pause menu CLOSE");
+
+        // 🔹 2) 게임 로직: 재개
+        if (window.gameInstance && typeof window.gameInstance.resume === 'function') {
+            window.gameInstance.resume();
+            console.log("Game state set to RUNNING.");
+        } else {
+            console.warn("window.gameInstance.resume()를 찾지 못했습니다.");
         }
     }
+}
+
 
     // 1. ESC 키 이벤트 리스너: 메뉴 토글
     document.addEventListener('keydown', (e) => {
