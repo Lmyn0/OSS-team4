@@ -157,12 +157,35 @@
 
       <div class="row">
         <div class="label">BOSS</div>
-        <div class="value">HARD: Defeat Red Monster to Win (HP: 3)</div>
+        <div class="value">HARD: Defeat Red Monster to Win (HP: 5)</div>
       </div>
 
-      <a href="level.html" class="manual-close-btn">CLOSED</a>
+      <a href="#" class="manual-close-btn" id="manualCloseBtn">CLOSED</a>
+
 
     </section>
   </main>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const closeBtn = document.getElementById('manualCloseBtn');
+    if (!closeBtn) return;
+
+    closeBtn.addEventListener('click', (e) => {
+      e.preventDefault(); // 기본 이동 막기 (href="#" 무시)
+
+      const ref = document.referrer || '';
+
+      // 1) 게임 화면(background.html)에서 온 경우 → 게임으로 되돌아가기
+      if (ref.includes('background.html')) {
+        window.location.href = ref;  // d=hard 같은 난이도 파라미터도 유지됨
+        return;
+      }
+
+      // 2) 그 외(처음 시작 화면 등) → 난이도 선택창으로 이동
+      window.location.href = 'level.html';  // 난이도 선택 페이지 파일명
+    });
+  });
+</script>
 </body>
 </html>

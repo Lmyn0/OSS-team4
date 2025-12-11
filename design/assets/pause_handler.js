@@ -62,11 +62,11 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = 'manual.html'; 
     });
 
-    // 5. 🚨 QUIT 버튼: 게임 상태를 그대로 유지하고 현재 화면에 머무름 (수정된 부분)
+    // 5. 🚨 QUIT 버튼: start.html로 이동
     document.getElementById('quitBtn').addEventListener('click', () => {
-        // 사용자의 요청: 게임의 상태를 그대로 멈춘 채 현재 화면에 머물도록 합니다.
-        // 현재 pauseOverlay.style.display는 이미 'flex' 상태이며, 게임은 일시 정지 상태입니다.
-        console.log("QUIT button pressed. Remaining on the paused screen per user request.");
-        // 아무런 추가 동작(화면 이동) 없이 현재 화면을 유지합니다.
+    console.log("QUIT button pressed. Going to START screen.");
+    window.location.href = 'start.html';   // 🔥 첫 화면 파일명!
     });
+
+
 });

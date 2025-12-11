@@ -288,7 +288,7 @@
         document.getElementById('quitBtn').addEventListener('click', () => {
             // 사용자의 요청에 따라 화면 이동 없이 현재 일시 정지 상태를 유지합니다.
             console.log("QUIT button pressed. Remaining on the paused screen.");
-            // 아무 동작도 하지 않음으로써 pauseOverlay.style.display: 'flex' 상태를 유지합니다.
+            window.location.href = 'start.html';
         });
     });
   </script>
