@@ -88,7 +88,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===== 5. 디버프 상태 / 아이템 상수 및 초기화 =====
-    const TIME_LEFT_PENALTY_MS = 30_000; // 시간 페널티 (기존값 유지)
+    const TIME_LEFT_PENALTY_MS = 15000; // 시간 페널티 (기존값 유지)
     const MAX_DEBUFF_ITEMS   = 25;
 
     // 🚨 [수정된 로직] 난이도에 따라 Slow 배율 설정
